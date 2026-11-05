@@ -17,10 +17,12 @@
     }
   ],
   "esmodules": [
-    "module/init.js"
+    "module/init.js",
+    "module/sheet-v3/init-v3.js"
   ],
   "styles": [
-    "styles/style.css"
+    "styles/style.css",
+    "styles/sheet-v3.css"
   ],
   "languages": [
     {

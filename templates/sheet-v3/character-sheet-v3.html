@@ -1,0 +1,74 @@
+<form class="{{cssClass}} theme-rulebook" autocomplete="off">
+  {{!-- 골격 단계: 데이터 연결 확인용 최소 템플릿. 실제 디자인은 다음 단계에서 입힌다. --}}
+  <nav class="mglg-tabs tabs" data-group="primary" aria-label="시트 메뉴">
+    <a class="item" data-tab="sheet">시트</a>
+    <a class="item" data-tab="profile">설정 · 공적점</a>
+  </nav>
+
+  <section class="mglg-body">
+    <div class="tab" data-group="primary" data-tab="sheet">
+      <header class="mglg-hero">
+        <img class="mglg-portrait" src="{{v3.hero.img}}" alt="{{v3.hero.tmpName}}" data-edit="img">
+        <div>
+          <h1>{{v3.hero.magicName}}</h1>
+          <p>임시 이름 {{v3.hero.tmpName}} · 사회적 신분 {{v3.hero.identify}}</p>
+          <p>경력 <b>{{v3.hero.career}}</b> · 기관 <b>{{v3.hero.agency}}</b> · 영역 <b>{{v3.hero.realmName}}</b></p>
+          <p>계제 {{v3.hero.gradeNumber}} · 마력 {{v3.hero.mana.value}} / {{v3.hero.mana.max}} (일시적 {{v3.hero.mana.tmp}})</p>
+          <p>공적점 {{v3.hero.exp}} · 마화 {{v3.hero.expAbstruct}} · 공격력 {{v3.hero.attack}} · 방어력 {{v3.hero.defence}} · 근원력 {{v3.hero.rootForce}}</p>
+          <p>상태:
+            {{#each v3.statuses}}<span class="mglg-chip {{#if on}}on{{/if}}">{{label}}{{#if on}} ●{{/if}}</span> {{/each}}
+          </p>
+        </div>
+      </header>
+
+      <section class="mglg-card">
+        <h2>특기</h2>
+        <table class="mglg-talent">
+          <thead>
+            <tr>
+              <th></th>
+              {{#each v3.talent.realms}}
+              <th class="{{#if gapBefore}}gap-on{{/if}}"></th>
+              <th class="{{#if own}}own{{/if}}">{{name}}</th>
+              {{/each}}
+            </tr>
+          </thead>
+          <tbody>
+            {{#each v3.talent.rows}}
+            <tr>
+              <th>{{number}}</th>
+              {{#each cells}}
+              <td class="{{#with (lookup @root.v3.talent.realms realm)}}{{#if gapBefore}}gap-on{{/if}}{{/with}}"></td>
+              <td class="{{#if state}}acquired{{/if}} {{#if misfortune}}misfortune{{/if}}" title="목표치 {{target}}">
+                {{title}} <small>{{target}}</small>
+              </td>
+              {{/each}}
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        <p>혼의 특기: {{v3.talent.spirit.name}} (목표치 6)</p>
+      </section>
+
+      <section class="mglg-card">
+        <h2>장서 ({{v3.abilities.length}})</h2>
+        <ul>{{#each v3.abilities}}<li>{{system.type}} · {{name}} · {{system.talent}} · {{system.cost}} · 충전 {{charge}}</li>{{/each}}</ul>
+      </section>
+
+      <section class="mglg-card">
+        <h2>관계</h2>
+        <ul>
+          {{#each v3.bonds}}<li>{{name}} · 운명 {{destiny}} · {{system.attribute}}</li>{{/each}}
+          {{#each v3.items}}<li>아이템 · {{name}} × {{system.quantity}}</li>{{/each}}
+        </ul>
+      </section>
+    </div>
+
+    <div class="tab" data-group="primary" data-tab="profile">
+      <section class="mglg-card">
+        <h2>신조와 의무</h2>
+        <p>의무: {{system.duty}}</p>
+      </section>
+    </div>
+  </section>
+</form>

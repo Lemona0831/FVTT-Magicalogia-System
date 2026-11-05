@@ -1,0 +1,20 @@
+/* 시트 v3 전용. 모든 규칙은 .mglg-sheet 아래에만 둔다 (Foundry UI·기존 시트에 영향 없음). */
+.mglg-sheet.theme-rulebook {
+  --mglg-bg: #F5F2EA; --mglg-ink: #161514; --mglg-sub: #55504A; --mglg-line: #D6D0C4;
+  --mglg-gap: #161514;
+}
+.mglg-sheet .window-content { background: var(--mglg-bg, #F5F2EA); color: var(--mglg-ink, #161514); }
+.mglg-sheet .mglg-body { overflow-y: auto; }
+.mglg-sheet .mglg-hero { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: center; }
+.mglg-sheet .mglg-portrait { width: 192px; aspect-ratio: 4 / 5; object-fit: cover; }
+.mglg-sheet .mglg-card { border-top: 2px solid var(--mglg-ink); padding-top: 12px; margin-top: 16px; }
+.mglg-sheet .mglg-chip.on { font-weight: 700; }
+.mglg-sheet table.mglg-talent { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; }
+.mglg-sheet table.mglg-talent th:first-child { width: 26px; }
+/* 갭 열은 머리줄·본문 모두 짝수번째 칸 */
+.mglg-sheet table.mglg-talent thead th:nth-child(even) { width: 12px; }
+.mglg-sheet table.mglg-talent .gap-on { background: var(--mglg-gap); }
+.mglg-sheet table.mglg-talent .own { font-weight: 800; }
+.mglg-sheet table.mglg-talent .acquired { font-weight: 700; border: 1.5px solid var(--mglg-ink); border-radius: 999px; }
+.mglg-sheet table.mglg-talent .misfortune { text-decoration: line-through; }
+.mglg-sheet table.mglg-talent small { display: none; }
