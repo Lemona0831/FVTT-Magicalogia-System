@@ -63,6 +63,28 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
     });
   }
 
+  /** 다시 그리기 전후로 스크롤 위치를 보존한다. 어느 요소가 스크롤되는지 가정하지 않고 찾는다. */
+  async _render(force = false, options = {}) {
+    const root = this.element?.[0];
+    const saved = [];
+    if (root) {
+      const els = [root, ...root.querySelectorAll("*")];
+      els.forEach((el, i) => {
+        if (el.scrollTop > 0 || el.scrollLeft > 0) saved.push({ i, top: el.scrollTop, left: el.scrollLeft, tag: el.tagName, cls: el.className });
+      });
+    }
+    await super._render(force, options);
+    const nroot = this.element?.[0];
+    if (!nroot || !saved.length) return;
+    const els = [nroot, ...nroot.querySelectorAll("*")];
+    for (const s of saved) {
+      // 같은 위치의 같은 요소를 우선, 없으면 태그·클래스가 같은 첫 요소
+      let el = els[s.i];
+      if (!el || el.tagName !== s.tag || el.className !== s.cls) el = els.find((e) => e.tagName === s.tag && e.className === s.cls);
+      if (el) { el.scrollTop = s.top; el.scrollLeft = s.left; }
+    }
+  }
+
   /** 라이브 actor.system 을 건드리지 않고 복사본으로 화면용 데이터를 만든다. */
   async getData(options) {
     const context = await super.getData(options);
