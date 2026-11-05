@@ -9,7 +9,7 @@
   --card-bg: transparent; --card-border: 0; --card-top: 2px solid #161514; --card-radius: 0; --card-shadow: none; --card-clip: none; --card-pad: 14px 0 0;
   --live-bg: transparent; --live-border: 1.5px solid #161514; --live-clip: none;
   --gap-bg: #161514; --gap-radius: 0; --gap-glow: none;
-  --head-bg: transparent; --own-head-bg: #161514; --own-head-ink: #F5F2EA; --head-ink: #161514; --sigil: #161514; --sigil-own: #F5F2EA;
+  --head-bg: #55504A; --own-head-bg: #161514; --own-head-ink: #FFFFFF; --head-ink: #FFFFFF; --sigil: #FFFFFF; --sigil-own: #FFFFFF;
   --acq-bg: transparent; --acq-ink: #161514; --acq-border: 1.5px solid #161514; --acq-radius: 999px; --acq-shadow: none; --acq-glow: none;
   --tn: #55504A; --cnum: #8A847A;
   --pip-w: 12px; --pip-h: 12px; --pip-radius: 999px; --pip-skew: 0deg; --pip-on-bg: #161514; --pip-off-bg: transparent; --pip-on-border: 1.5px solid #161514; --pip-off-border: 1.5px solid #161514; --pip-glow: none;
@@ -32,7 +32,7 @@
   --card-bg: #FFFFFF; --card-border: 0; --card-top: 0; --card-radius: 0; --card-shadow: none; --card-clip: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); --card-pad: 20px 24px;
   --live-bg: #EEF3F8; --live-border: 0; --live-clip: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   --gap-bg: #7DD3FC; --gap-radius: 0; --gap-glow: none;
-  --head-bg: #EEF3F8; --own-head-bg: #0F1A2A; --own-head-ink: #FFFFFF; --head-ink: #0F1A2A; --sigil: #0369A1; --sigil-own: #7DD3FC;
+  --head-bg: #4A5B70; --own-head-bg: #0F1A2A; --own-head-ink: #FFFFFF; --head-ink: #FFFFFF; --sigil: #FFFFFF; --sigil-own: #7DD3FC;
   --acq-bg: #0F1A2A; --acq-ink: #FFFFFF; --acq-border: 0; --acq-radius: 0; --acq-shadow: none; --acq-glow: none;
   --tn: #0369A1; --cnum: #4A5B70;
   --pip-w: 16px; --pip-h: 9px; --pip-radius: 0; --pip-skew: -20deg; --pip-on-bg: #0EA5E9; --pip-off-bg: #DCE5EF; --pip-on-border: 0; --pip-off-border: 0; --pip-glow: none;
@@ -54,7 +54,7 @@
   --card-bg: #FFFEFA; --card-border: 0; --card-top: 0; --card-radius: 18px; --card-shadow: 0 6px 0 #9FD8EE; --card-clip: none; --card-pad: 20px 24px;
   --live-bg: #F2FAFD; --live-border: 0; --live-clip: none;
   --gap-bg: #2C7DA0; --gap-radius: 4px; --gap-glow: none;
-  --head-bg: transparent; --own-head-bg: transparent; --own-head-ink: #1F6E8C; --head-ink: #1E3A4C; --sigil: #2C7DA0; --sigil-own: #FF8A5B;
+  --head-bg: #2C7DA0; --own-head-bg: #1F6E8C; --own-head-ink: #FFFFFF; --head-ink: #FFFFFF; --sigil: #FFFFFF; --sigil-own: #FFE27A;
   --acq-bg: #FFE27A; --acq-ink: #1E3A4C; --acq-border: 0; --acq-radius: 6px; --acq-shadow: none; --acq-glow: none;
   --tn: #1F6E8C; --cnum: #4C6B7D;
   --pip-w: 14px; --pip-h: 14px; --pip-radius: 999px; --pip-skew: 0deg; --pip-on-bg: #FF8A5B; --pip-off-bg: transparent; --pip-on-border: 2px solid #FF8A5B; --pip-off-border: 2px solid #F5C9B3; --pip-glow: none;
@@ -76,7 +76,7 @@
   --card-bg: #161B23; --card-border: 1px solid #2A313D; --card-top: 0; --card-radius: 0; --card-shadow: none; --card-clip: none; --card-pad: 20px 24px;
   --live-bg: #11151C; --live-border: 1px solid #2A313D; --live-clip: none;
   --gap-bg: #3EE6C8; --gap-radius: 2px; --gap-glow: 0 0 10px rgba(62, 230, 200, 0.8);
-  --head-bg: transparent; --own-head-bg: transparent; --own-head-ink: #E9FFFB; --head-ink: #9AA4B2; --sigil: #9AA4B2; --sigil-own: #3EE6C8;
+  --head-bg: #232A35; --own-head-bg: #11151C; --own-head-ink: #FFFFFF; --head-ink: #FFFFFF; --sigil: #FFFFFF; --sigil-own: #3EE6C8;
   --acq-bg: transparent; --acq-ink: #E9FFFB; --acq-border: 1px solid rgba(62, 230, 200, 0.8); --acq-radius: 4px; --acq-shadow: 0 0 8px rgba(62, 230, 200, 0.4), inset 0 0 6px rgba(62, 230, 200, 0.25); --acq-glow: 0 0 6px rgba(62, 230, 200, 0.9);
   --tn: #3EE6C8; --cnum: #6B7686;
   --pip-w: 13px; --pip-h: 13px; --pip-radius: 0; --pip-skew: 0deg; --pip-on-bg: #3EE6C8; --pip-off-bg: transparent; --pip-on-border: 0; --pip-off-border: 1px solid #3A4250; --pip-glow: 0 0 8px rgba(62, 230, 200, 0.8);
