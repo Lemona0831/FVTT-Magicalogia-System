@@ -58,6 +58,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
       width: 940,
       height: 900,
       resizable: true,
+      scrollY: [".mglg-body"],   // 다시 그려도 스크롤 위치 유지
       tabs: [{ navSelector: ".mglg-tabs", contentSelector: ".mglg-body", initial: "sheet" }]
     });
   }
