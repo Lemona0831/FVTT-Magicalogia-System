@@ -73,7 +73,7 @@
 | --- | --- | --- | --- |
 | `ability` | **장서** (`MAGICALOGIA.Ability`) | `check`(봉인 체크), `type`, `class`(분류), `mana_mark`(마소 마크), `talent`(지정 특기), `target`, `cost`, `word`(주구 텍스트), `charge`(충전 수), `word_check`(주구 사용됨), `description` | 소환·주문·장비를 한 타입으로 처리 |
 | `bond` | **관계/인물** (`Bonds`, `BondsList`="인물 목록") = **앵커** | `check`(운명의 힘 사용됨), `destiny`("1" 문자열), `attribute`, `description`, `actor`(연결 액터 id) | 액터를 시트에 드롭하면 `bond`가 자동 생성됨 (`actor-sheet.js:231-251`) |
-| `item` | **아이템** | `description`, `requirement`(사용 자격), `require_exp`(필요 공적점), `quantity`, `format`(소유 형식) | **프라이즈로 쓰이는 타입으로 추정** [추정] (필요 공적점·소유 형식 필드가 있음). "프라이즈"라는 단어는 코드·언어 파일 어디에도 없다 (`git grep`으로 확인). |
+| `item` | **아이템** | `description`, `requirement`(사용 자격), `require_exp`(필요 공적점), `quantity`, `format`(소유 형식) | 일반 아이템 (사용자 확인). 처음엔 프라이즈로 추정했으나 철회. 프라이즈는 `bond`로 처리하기로 결정 (§9-0). |
 | `handout` | **핸드아웃** (`Handout`) → '비밀' 탭 | `visible`, `sVisible`(사용자 id → 불리언 맵), `description`, `secret` | GM이 사용자별 공개 여부를 정함 (§3-2) |
 
 ### 2-1. 세부 사항
@@ -334,7 +334,7 @@
 | 타락치 | 없음 | **새 필드** | `flags.magicalogia.sheetV3.corruption` (숫자/문자열) |
 | 단장 "부담" | 없음 | 새 필드 (내용 정의 필요) | 시안의 라벨일 뿐 규칙 정의가 없음 → `attribute` 재사용 안(필드 추가 없음) 우선 |
 | 운명의 힘 사용 | `bond.system.check` + `_useItemPower` | 그대로 | 시안에 버튼 자리가 없음. 관계 한 칸에 작은 버튼 추가 제안 |
-| 프라이즈 | `item` 타입 [추정] | 결정 필요 | 명세 §3-4 "데이터 분석 후 결정" → **제안: 관계 목록과 분리해 설정·공적점 탭의 "프라이즈" 칸으로** (`필요 공적점`·`소유 형식`·`사용 자격`이 공적점 관리와 가까움) |
+| 프라이즈 | `bond` 아이템 + `flags…kind = "prize"` | **확정(사용자 결정)** | 프라이즈는 `bond`로 처리하고 관계 목록에 종류 태그 "프라이즈"로 둔다. `item` 타입은 일반 아이템이며 프라이즈가 아니다 (§2의 "프라이즈 추정"은 철회). |
 
 ### 6-6. 설정 · 공적점 탭
 
@@ -387,7 +387,7 @@
 | --- | --- | --- | --- |
 | 액터 | `careerCreed`, `agencyNote`, `race`, `rank`, `raceCreed` | 문자열 | "" |
 | 액터 | `merits.{duty, victory, survival, creed, roleplay, heartstring, mission, sacrifice, other}` | 불리언 | false |
-| 아이템 `bond` | `kind` (`anchor`·`binder`·`seal`) | 문자열 | `anchor` (없으면 앵커로 취급) |
+| 아이템 `bond` | `kind` (`anchor`·`binder`·`seal`·`prize`) | 문자열 | `anchor` (없으면 앵커로 취급) |
 | 아이템 `bond` | `wish`, `corruption` | 문자열 | "" |
 | 아이템 `ability` | `maxCharge` (선택) | 숫자 | 5 |
 | 설정 (client) | `mglg.theme`, `mglg.targetPreview` | 문자열 / 불리언 | `inherit` / false |
@@ -448,6 +448,15 @@ lang/ (키 추가)       # 기존 파일이 아니라 새 키 접두사 MGLG.V3.
 9. 커뮤니티 모듈(libWrapper, Monk's Active Tile Triggers 등)과의 충돌: 새 시트는 훅을 새로 걸지 않는다. 그래도 월드에서 켜 놓고 시트가 열리는지 확인한다 [미확인].
 
 ## 9. 결정이 필요한 질문 (사용자)
+
+### 9-0. 확정된 결정 (사용자 답변)
+
+- **질문 1 편집 방식:** 편집 모드 없이 원클릭. 갭 칸 클릭 = 칠하기 토글, 특기 칸 옆 체크칸 = 습득 토글(칸 본체 클릭은 판정), 표 아래 영역 선택 바 = 영역 선택 시 갭 2칸 자동 칠하기. 자동 칠하기는 기존 `_preUpdate`에 기대지 않고 새 시트가 `talent.gap`을 직접 저장한다.
+- **질문 3 단장·봉서:** `bond`의 종류 필드(`flags…kind`)로 처리한다.
+- **프라이즈:** `bond` + `kind = "prize"`로 처리한다 (위 §6-5). `item` 타입은 일반 아이템으로 따로 둔다.
+- **그 외(2, 4~11):** 답변 전. 아래 질문 중 답이 없는 항목은 제안대로 진행할 예정이며, 사용자 확인 후 확정한다.
+
+### 9-1. 원래 질문 (질문 4는 위 결정으로 해소됨)
 
 1. **편집 모드:** 시안 상단에는 "편집" 버튼만 있고 습득 체크·갭 칠하기·영역 선택·`별↔어둠`·불운 표시를 어디서 하는지 없다. 제안: "편집" 버튼을 켜면 특기표에서 클릭이 판정 대신 습득 토글이 되고, 갭 열과 영역 머리가 클릭 가능해진다. 이대로 가도 되는가?
 2. **별↔어둠 연결 옵션**을 유지할 것인가 (시스템에 있음, 명세는 "이어지지 않음").
