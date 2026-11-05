@@ -93,6 +93,14 @@ assert.deepEqual(computeTargets(empty(), noGap()).flat(), Array(66).fill(12));
   }
 }
 
+// 7-b) 객체 형태 table ({"0":{"0":…}}, Foundry 폼 업데이트 후 저장 형태)도 배열과 같은 결과
+{
+  const t = empty(); t[1][4].state = true; t[2][3].misfortune = true;
+  const obj = {}; t.forEach((r, i) => { obj[i] = {}; r.forEach((c, j) => { obj[i][j] = c; }); });
+  assert.deepEqual(computeTargets(obj, noGap()), computeTargets(t, noGap()));
+  assert.deepEqual(realmDebuff(obj), realmDebuff(t));
+}
+
 // 8) curiosity → 갭 2칸 (1..5), 어둠(6)은 gap[5] 하나, 0 은 없음
 assert.deepEqual(gapsForCuriosity(2), { 0: false, 1: true, 2: true, 3: false, 4: false, 5: false });
 assert.deepEqual(gapsForCuriosity(1), { 0: true, 1: true, 2: false, 3: false, 4: false, 5: false });

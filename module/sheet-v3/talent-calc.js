@@ -60,8 +60,11 @@ export function computeTargets(table, gap, overflowX = false) {
 
 /** 영역별 불운 여부: 그 영역에 misfortune 칸이 하나라도 있으면 true (판정 -1) */
 export function realmDebuff(table) {
-  return Array.from({ length: REALMS }, (_, i) =>
-    (table?.[i] ?? []).some((c) => c?.misfortune));
+  // 저장된 table 은 배열이거나 {"0":{"0":…}} 형태의 객체일 수 있으므로 인덱스로만 접근한다
+  return Array.from({ length: REALMS }, (_, i) => {
+    for (let j = 0; j < ROWS; j++) if (table?.[i]?.[j]?.misfortune) return true;
+    return false;
+  });
 }
 
 /** 자기 영역(curiosity 1..6) → 칠할 갭 키. 0 이면 없음 */
