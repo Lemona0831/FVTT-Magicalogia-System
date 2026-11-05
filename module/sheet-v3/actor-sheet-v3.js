@@ -131,6 +131,8 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
       isGM: game.user.isGM,
       theme,
       isSummer: theme === "summer",
+      themes: [["rulebook", "룰북 편집"], ["academy", "학원 도시"], ["summer", "여름 청춘"], ["urban", "어반 판타지"]]
+        .map(([value, label]) => ({ value, label, selected: value === theme })),
       themeText: THEME_TEXT[theme],
       preview: this._preview,
       hero: {
@@ -189,6 +191,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
   activateListeners(html) {
     super.activateListeners(html);
     // 읽기만 가능한 동작
+    html.find(".mglg-theme-select").on("change", (ev) => game.settings.set("magicalogia", "v3Theme", ev.currentTarget.value));
     html.find(".mglg-preview-toggle").on("click", () => { this._preview = !this._preview; this.render(); });
     html.find(".mglg-item-edit").on("click", (ev) => this.actor.items.get(ev.currentTarget.dataset.itemId)?.sheet.render(true));
     html.find(".mglg-echo").on("click", (ev) => this.actor._echoItemDescription(ev.currentTarget.dataset.itemId));

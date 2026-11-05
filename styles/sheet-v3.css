@@ -121,6 +121,8 @@
 }
 .mglg-sheet .mglg-tabs a.item.active { color: var(--tab-on-ink); background: var(--tab-on-bg); border-bottom-color: var(--accent); font-weight: 700; text-shadow: var(--glow-text); }
 
+.mglg-sheet .mglg-theme-select { height: 30px; padding: 0 8px; font-size: 13px; border: var(--btn-border); background: var(--btn-bg); color: var(--btn-ink); border-radius: var(--btn-radius); }
+
 /* 버튼 · 칩 · 태그 · 라벨 */
 .mglg-sheet .mglg-btn {
   font-size: 13px; padding: 6px 12px; background: var(--btn-bg); border: var(--btn-border); color: var(--btn-ink);
