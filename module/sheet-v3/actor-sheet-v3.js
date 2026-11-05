@@ -130,6 +130,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
       editable: this.isEditable,
       isGM: game.user.isGM,
       theme,
+      isSummer: theme === "summer",
       themeText: THEME_TEXT[theme],
       preview: this._preview,
       hero: {

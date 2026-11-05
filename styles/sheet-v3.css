@@ -188,6 +188,15 @@
 .mglg-sheet .mglg-inline-num { width: 56px; text-align: center; }
 .mglg-sheet .mglg-exp .mglg-inline-num { font-size: 22px; font-family: var(--f-title); }
 
+/* 여름 청춘 전용: 테이프 장식, 칸마다 끊어진 둥근 갭 막대 */
+.mglg-sheet .mglg-tape { position: absolute; display: block; pointer-events: none; }
+.mglg-sheet .mglg-tape-a { left: 44px; top: 34px; width: 100px; height: 24px; background: #FFC93C; opacity: 0.85; transform: rotate(-6deg); }
+.mglg-sheet .mglg-tape-b { right: 40px; bottom: 34px; width: 90px; height: 22px; background: #8FD3F4; opacity: 0.9; transform: rotate(5deg); }
+.mglg-sheet .theme-summer .mglg-gapcol.gap-on { padding: 2px 1px; background-clip: content-box; }
+.mglg-sheet .theme-summer .mglg-quick, .mglg-sheet .theme-summer .mglg-live { border-radius: 14px; }
+.mglg-sheet .theme-summer .mglg-tabs { gap: 8px; padding-bottom: 8px; }
+.mglg-sheet .theme-summer .mglg-tabs a.item { font-family: Jua, sans-serif; font-size: 16px; padding: 8px 20px; border-bottom: 0; }
+
 /* 게이지·충전 칸 */
 .mglg-sheet .mglg-pips { display: flex; align-items: center; gap: 5px; }
 .mglg-sheet .mglg-pip { display: inline-block; flex: none; width: var(--pip-w); height: var(--pip-h); border-radius: var(--pip-radius); transform: skewX(var(--pip-skew)); background: var(--pip-off-bg); border: var(--pip-off-border); }
