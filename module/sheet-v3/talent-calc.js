@@ -67,11 +67,18 @@ export function realmDebuff(table) {
   });
 }
 
-/** 자기 영역(curiosity 1..6) → 칠할 갭 키. 0 이면 없음 */
+/**
+ * 자기 영역(curiosity 1..6) → 칠할 갭. 0 이면 없음.
+ * 룰북(기본 룰북 p.39, 1.09.01): 자기 영역의 좌우 갭을 칠한다.
+ * 어둠(6)이면 어둠 왼쪽 갭과 "별의 왼쪽 갭"을 칠한다 (어둠과 별이 갭으로 이어지는 것은 아님).
+ */
 export function gapsForCuriosity(curiosity) {
   const c = Number(curiosity) || 0;
   const gap = { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false };
-  if (c >= 1 && c <= REALMS) { gap[c - 1] = true; if (c <= 5) gap[c] = true; }
+  if (c >= 1 && c <= REALMS) {
+    gap[c - 1] = true;                 // 자기 영역 왼쪽 갭
+    gap[c <= 5 ? c : 0] = true;        // 오른쪽 갭 (어둠이면 별의 왼쪽 갭)
+  }
   return gap;
 }
 

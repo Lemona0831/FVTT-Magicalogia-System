@@ -104,7 +104,7 @@ assert.deepEqual(computeTargets(empty(), noGap()).flat(), Array(66).fill(12));
 // 8) curiosity → 갭 2칸 (1..5), 어둠(6)은 gap[5] 하나, 0 은 없음
 assert.deepEqual(gapsForCuriosity(2), { 0: false, 1: true, 2: true, 3: false, 4: false, 5: false });
 assert.deepEqual(gapsForCuriosity(1), { 0: true, 1: true, 2: false, 3: false, 4: false, 5: false });
-assert.deepEqual(gapsForCuriosity(6), { 0: false, 1: false, 2: false, 3: false, 4: false, 5: true });
+assert.deepEqual(gapsForCuriosity(6), { 0: true, 1: false, 2: false, 3: false, 4: false, 5: true }); // 룰북 p.39: 어둠 = 어둠 왼쪽 + 별 왼쪽
 assert.deepEqual(gapsForCuriosity(0), noGap());
 
 // 9) 접두사 제거
