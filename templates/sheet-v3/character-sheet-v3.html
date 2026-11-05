@@ -1,73 +1,231 @@
-<form class="{{cssClass}} theme-rulebook" autocomplete="off">
-  {{!-- 골격 단계: 데이터 연결 확인용 최소 템플릿. 실제 디자인은 다음 단계에서 입힌다. --}}
+<form class="{{cssClass}} mglg-root theme-{{v3.theme}} {{#if v3.preview}}preview{{/if}}" autocomplete="off">
+  <button type="submit" style="display:none" tabindex="-1" aria-hidden="true"></button>
+
   <nav class="mglg-tabs tabs" data-group="primary" aria-label="시트 메뉴">
-    <a class="item" data-tab="sheet">시트</a>
-    <a class="item" data-tab="profile">설정 · 공적점</a>
+    <a class="item" data-tab="sheet" title="판정과 현재 상태를 보는 화면">시트</a>
+    <a class="item" data-tab="profile" title="신조, 신상, 공적점 획득 조건, 메모, 비밀">설정 · 공적점</a>
+    <span class="mglg-grow"></span>
+    <button type="button" class="mglg-btn mglg-preview-toggle {{#if v3.preview}}on{{/if}}" title="켜면 각 특기 칸 오른쪽 위에 목표치를 작게 표시합니다">목표치 미리보기 {{#if v3.preview}}켜짐{{else}}꺼짐{{/if}}</button>
   </nav>
 
   <section class="mglg-body">
+
+    {{!-- ===================== 시트 탭 ===================== --}}
     <div class="tab" data-group="primary" data-tab="sheet">
-      <header class="mglg-hero">
-        <img class="mglg-portrait" src="{{v3.hero.img}}" alt="{{v3.hero.tmpName}}" data-edit="img">
-        <div>
-          <h1>{{v3.hero.magicName}}</h1>
-          <p>임시 이름 {{v3.hero.tmpName}} · 사회적 신분 {{v3.hero.identify}}</p>
-          <p>경력 <b>{{v3.hero.career}}</b> · 기관 <b>{{v3.hero.agency}}</b> · 영역 <b>{{v3.hero.realmName}}</b></p>
-          <p>계제 {{v3.hero.gradeNumber}} · 마력 {{v3.hero.mana.value}} / {{v3.hero.mana.max}} (일시적 {{v3.hero.mana.tmp}})</p>
-          <p>공적점 {{v3.hero.exp}} · 마화 {{v3.hero.expAbstruct}} · 공격력 {{v3.hero.attack}} · 방어력 {{v3.hero.defence}} · 근원력 {{v3.hero.rootForce}}</p>
-          <p>상태:
-            {{#each v3.statuses}}<span class="mglg-chip {{#if on}}on{{/if}}">{{label}}{{#if on}} ●{{/if}}</span> {{/each}}
-          </p>
+
+      {{!-- 빠른 굴림 바 --}}
+      <div class="mglg-quick mglg-panel-live">
+        <span class="mglg-label">각종 표</span>
+        <select class="mglg-table-select" aria-label="각종 표 선택">
+          {{#each v3.tables}}<option value="{{name}}" {{#if missing}}disabled{{/if}}>{{name}}{{#if missing}} (롤테이블 없음){{/if}}</option>{{/each}}
+        </select>
+        <button type="button" class="mglg-btn on mglg-table-roll" title="고른 표를 굴립니다. 같은 이름의 롤테이블이 있어야 합니다">굴리기</button>
+        <span class="mglg-grow"></span>
+        <span class="mglg-label">주사위</span>
+        <input type="text" class="mglg-dice-input" value="2d6+0" aria-label="주사위 식" size="8">
+        <button type="button" class="mglg-btn mglg-dice-roll" title="입력한 식을 굴려 채팅에 남깁니다">굴리기</button>
+      </div>
+
+      {{!-- 히어로 --}}
+      <header class="mglg-hero mglg-panel">
+        <div class="mglg-portrait-wrap">
+          <svg class="mglg-circle" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" stroke-width="0.8"/><circle cx="100" cy="100" r="62" fill="none" stroke="currentColor" stroke-width="1"/><polygon points="100,16 174,154 26,154" fill="none" stroke="currentColor" stroke-width="1"/><polygon points="100,184 26,46 174,46" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="100" cy="100" r="74" fill="none" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2 5"/></svg>
+          <img class="mglg-portrait" src="{{v3.hero.img}}" alt="{{v3.hero.tmpName}}" data-edit="img" title="클릭하면 이미지를 바꿉니다">
+        </div>
+
+        <div class="mglg-hero-main">
+          <div class="mglg-hero-top">
+            <div class="mglg-grow">
+              <span class="mglg-eyebrow">{{v3.themeText.eyebrow}}</span>
+              <h1><input class="mglg-name" type="text" name="system.details.magic_name" value="{{v3.hero.magicName}}" placeholder="마법명" aria-label="마법명"></h1>
+              <div class="mglg-meta">임시 이름 <input type="text" name="name" value="{{v3.hero.tmpName}}" aria-label="임시 이름"> · 사회적 신분 <input type="text" name="system.details.identify" value="{{v3.hero.identify}}" aria-label="사회적 신분"></div>
+              <div class="mglg-meta">경력 <input type="text" name="system.details.career" value="{{v3.hero.career}}" aria-label="경력"> · 기관 <input type="text" name="system.details.agency" value="{{v3.hero.agency}}" aria-label="기관"> · 영역 <b>{{#if v3.hero.realmName}}{{v3.hero.realmName}}{{else}}미정{{/if}}</b></div>
+            </div>
+            <div class="mglg-badge" title="계제"><span>계제</span><b>{{#if v3.hero.gradeNumber}}{{v3.hero.gradeNumber}}{{else}}–{{/if}}</b></div>
+          </div>
+
+          <div class="mglg-live mglg-panel-live">
+            <div class="mglg-live-row">
+              <div class="mglg-mana">
+                <div class="mglg-line"><span class="mglg-label">마력</span>
+                  <b class="mglg-big">{{v3.hero.mana.value}}</b><span class="mglg-sub">/ <input class="mglg-inline-num" type="number" name="system.mana.max" value="{{v3.hero.mana.max}}" aria-label="마력 최대치"></span>
+                  <span class="mglg-note">일시적 {{v3.hero.mana.tmp}}</span>
+                  <span class="mglg-grow"></span>
+                  <button type="button" class="mglg-mini mglg-step" data-path="system.mana.value" data-add="-1" title="마력 1 감소" aria-label="마력 감소">−</button>
+                  <button type="button" class="mglg-mini mglg-step" data-path="system.mana.value" data-add="1" title="마력 1 증가" aria-label="마력 증가">+</button>
+                </div>
+                <div class="mglg-pips mglg-hp">{{#each v3.hero.manaPips}}<span class="mglg-pip {{#if on}}on{{/if}}"></span>{{/each}}</div>
+                <div class="mglg-line"><span class="mglg-label">일시적 마력</span>
+                  <button type="button" class="mglg-mini mglg-step" data-path="system.tmp_mana.value" data-add="-1" title="일시적 마력 1 감소" aria-label="일시적 마력 감소">−</button>
+                  <button type="button" class="mglg-mini mglg-step" data-path="system.tmp_mana.value" data-add="1" title="일시적 마력 1 증가" aria-label="일시적 마력 증가">+</button>
+                </div>
+              </div>
+              <div class="mglg-exp">
+                <span class="mglg-label">공적점 · 마화</span>
+                <span class="mglg-num"><input class="mglg-inline-num" type="text" name="system.details.exp" value="{{v3.hero.exp}}" aria-label="공적점"> · <input class="mglg-inline-num" type="text" name="system.details.exp_abstruct" value="{{v3.hero.expAbstruct}}" aria-label="마화"></span>
+              </div>
+            </div>
+            <div class="mglg-live-row">
+              <label class="mglg-stat"><span class="mglg-label">공격력</span><input class="mglg-num" type="number" name="system.details.attack" value="{{v3.hero.attack}}"></label>
+              <label class="mglg-stat"><span class="mglg-label">방어력</span><input class="mglg-num" type="number" name="system.details.defence" value="{{v3.hero.defence}}"></label>
+              <label class="mglg-stat"><span class="mglg-label">근원력</span><input class="mglg-num" type="number" name="system.details.root_force" value="{{v3.hero.rootForce}}"></label>
+              <div class="mglg-grow">
+                <span class="mglg-label">상태</span>
+                <div class="mglg-chips">
+                  {{#each v3.statuses}}<button type="button" class="mglg-chip mglg-status {{#if on}}on{{/if}}" data-status="{{key}}" aria-pressed="{{on}}" title="{{label}} 상태를 켜고 끕니다">{{label}}{{#if on}} ●{{/if}}</button>{{/each}}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
+      {{!-- 특기 --}}
       <section class="mglg-card">
-        <h2>특기</h2>
+        <div class="mglg-card-head"><h2>특기</h2><span class="mglg-note">{{v3.themeText.legend}} · 칸을 누르면 판정</span></div>
         <table class="mglg-talent">
           <thead>
             <tr>
-              <th></th>
+              <th class="mglg-rn"></th>
               {{#each v3.talent.realms}}
-              <th class="{{#if gapBefore}}gap-on{{/if}}"></th>
-              <th class="{{#if own}}own{{/if}}">{{name}}</th>
+              <th class="mglg-gapcol {{#if gapBefore}}gap-on{{/if}}"></th>
+              <th class="mglg-realm {{#if own}}own{{/if}}"><svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><path d="{{sigil}}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>{{name}}{{#if debuff}} <small title="이 영역에 불운 칸이 있어 판정 -1">−1</small>{{/if}}</th>
               {{/each}}
             </tr>
           </thead>
           <tbody>
             {{#each v3.talent.rows}}
             <tr>
-              <th>{{number}}</th>
+              <th class="mglg-rn">{{number}}</th>
               {{#each cells}}
-              <td class="{{#with (lookup @root.v3.talent.realms realm)}}{{#if gapBefore}}gap-on{{/if}}{{/with}}"></td>
-              <td class="{{#if state}}acquired{{/if}} {{#if misfortune}}misfortune{{/if}}" title="목표치 {{target}}">
-                {{title}} <small>{{target}}</small>
+              <td class="mglg-gapcol mglg-gap {{#if gapBefore}}gap-on{{/if}}" data-gap="{{realm}}" title="갭 칠하기 / 해제"></td>
+              <td class="mglg-cell {{#if state}}acquired{{/if}} {{#if misfortune}}misfortune{{/if}}" data-realm="{{realm}}" data-row="{{row}}" data-title="{{title}}" data-target="{{target}}" data-debuff="{{debuff}}" title="{{title}} 판정 (목표치 {{target}}). 우클릭 = 불운 표시">
+                <input class="mglg-acquire" type="checkbox" data-realm="{{realm}}" data-row="{{row}}" {{#if state}}checked{{/if}} aria-label="{{title}} 습득" title="습득 특기">
+                <span class="mglg-cell-name">{{title}}</span>
+                <span class="mglg-tn">{{target}}</span>
               </td>
               {{/each}}
             </tr>
             {{/each}}
           </tbody>
         </table>
-        <p>혼의 특기: {{v3.talent.spirit.name}} (목표치 6)</p>
+
+        <div class="mglg-realm-bar" role="group" aria-label="자기 영역 선택">
+          <span class="mglg-label">자기 영역</span>
+          {{#each v3.talent.realms}}<button type="button" class="mglg-btn mglg-realm-pick {{#if own}}on{{/if}}" data-curiosity="{{curiosity}}" aria-pressed="{{own}}" title="{{name}}을 자기 영역으로 정하면 양옆 갭 두 칸이 칠해집니다">{{name}}</button>{{/each}}
+          <label class="mglg-check-inline" title="켜면 별과 어둠이 이어진 것으로 계산합니다"><input type="checkbox" name="system.talent.overflowX" {{#if v3.talent.overflowX}}checked{{/if}} data-dtype="Boolean"> 별 ↔ 어둠 연결</label>
+        </div>
+
+        <div class="mglg-soul">
+          <span class="mglg-tag">혼의 특기</span>
+          <input type="text" class="mglg-soul-name" name="system.talent.spirit_talent.name" value="{{v3.talent.spirit.name}}" placeholder="[미기재]" aria-label="혼의 특기 이름">
+          <span class="mglg-note">목표치 항상 6 · 굴리기 전 마력 1 소비는 직접</span>
+          <span class="mglg-grow"></span>
+          <button type="button" class="mglg-btn mglg-spirit-roll" title="혼의 특기로 판정합니다 (목표치 6, 불운이면 12)">혼의 특기로 판정</button>
+        </div>
       </section>
 
-      <section class="mglg-card">
-        <h2>장서 ({{v3.abilities.length}})</h2>
-        <ul>{{#each v3.abilities}}<li>{{system.type}} · {{name}} · {{system.talent}} · {{system.cost}} · 충전 {{charge}}</li>{{/each}}</ul>
-      </section>
+      {{!-- 장서 | 관계 --}}
+      <div class="mglg-two">
+        <section class="mglg-card">
+          <div class="mglg-card-head"><h2>장서</h2><span class="mglg-note">코스트가 맞는 장서에 마소 충전</span><span class="mglg-grow"></span><span class="mglg-note">{{v3.abilities.length}}권</span>
+            <button type="button" class="mglg-btn mglg-item-create" data-type="ability" data-img="book" title="빈 장서를 추가합니다">+ 추가</button></div>
+          <div class="mglg-list">
+            {{#each v3.abilities}}
+            <div class="mglg-spell">
+              <span class="mglg-tag">{{system.type}}</span>
+              <div class="mglg-spell-main">
+                <button type="button" class="mglg-link mglg-echo" data-item-id="{{id}}" title="설명을 채팅에 올립니다">{{name}}</button> <span class="mglg-note">{{system.class}}</span>
+                <span class="mglg-note">{{system.talent}} · {{system.target}} · {{system.cost}}</span>
+              </div>
+              <div class="mglg-pips mglg-charge-pips">
+                <button type="button" class="mglg-mini mglg-charge" data-item-id="{{id}}" data-add="-1" title="충전 1 감소" aria-label="충전 감소">−</button>
+                {{#each pips}}<span class="mglg-pip {{#if on}}on{{/if}}"></span>{{/each}}
+                <button type="button" class="mglg-mini mglg-charge" data-item-id="{{id}}" data-add="1" title="충전 1 증가" aria-label="충전 증가">+</button>
+              </div>
+              <button type="button" class="mglg-check mglg-word {{#if wordUsed}}on{{/if}}" data-item-id="{{id}}" aria-pressed="{{wordUsed}}" aria-label="주구" title="주구 사용 (누르면 채팅에 주구가 올라갑니다)"></button>
+              <span class="mglg-row-tools"><a class="mglg-item-edit" data-item-id="{{id}}" title="장서 편집"><i class="fas fa-edit"></i></a> <a class="mglg-item-delete" data-item-id="{{id}}" title="장서 삭제"><i class="fas fa-trash"></i></a></span>
+            </div>
+            {{else}}<p class="mglg-note">장서가 없습니다.</p>{{/each}}
+          </div>
+          <button type="button" class="mglg-add-row mglg-item-create" data-type="ability" data-img="book">+ 장서 추가 · 마법 목록은 추후 컴펜디움으로 제공</button>
+        </section>
 
-      <section class="mglg-card">
-        <h2>관계</h2>
-        <ul>
-          {{#each v3.bonds}}<li>{{name}} · 운명 {{destiny}} · {{system.attribute}}</li>{{/each}}
-          {{#each v3.items}}<li>아이템 · {{name}} × {{system.quantity}}</li>{{/each}}
-        </ul>
-      </section>
+        <section class="mglg-card">
+          <div class="mglg-card-head"><h2>관계</h2><span class="mglg-note">앵커 · 아이템</span><span class="mglg-grow"></span>
+            <button type="button" class="mglg-btn mglg-item-create" data-type="bond" data-img="mystery-man" title="앵커를 추가합니다">+ 추가</button></div>
+          <div class="mglg-list">
+            {{#each v3.relations}}
+            <div class="mglg-rel">
+              <span class="mglg-tag">{{kind}}</span>
+              <button type="button" class="mglg-link mglg-echo" data-item-id="{{id}}" title="설명을 채팅에 올립니다">{{name}}</button>
+              {{#if isBond}}<div class="mglg-pips">{{#each pips}}<span class="mglg-pip {{#if on}}on{{/if}}"></span>{{/each}}</div><span class="mglg-note">속성 {{system.attribute}}</span>{{/if}}
+              {{#if isItem}}<span class="mglg-note">개수 {{qty}}</span>{{/if}}
+              <span class="mglg-row-tools"><a class="mglg-item-edit" data-item-id="{{id}}" title="편집"><i class="fas fa-edit"></i></a> <a class="mglg-item-delete" data-item-id="{{id}}" title="삭제"><i class="fas fa-trash"></i></a></span>
+            </div>
+            {{else}}<p class="mglg-note">관계가 없습니다.</p>{{/each}}
+          </div>
+          <button type="button" class="mglg-add-row mglg-item-create" data-type="bond" data-img="mystery-man">+ 앵커 추가</button>
+          <button type="button" class="mglg-add-row mglg-item-create" data-type="item" data-img="item-bag">+ 아이템 추가</button>
+        </section>
+      </div>
     </div>
 
+    {{!-- ===================== 설정 · 공적점 탭 ===================== --}}
     <div class="tab" data-group="primary" data-tab="profile">
       <section class="mglg-card">
-        <h2>신조와 의무</h2>
-        <p>의무: {{system.duty}}</p>
+        <div class="mglg-card-head"><h2>신조와 의무</h2></div>
+        <div class="mglg-grid2">
+          <label class="mglg-fld"><span class="mglg-label">경력 신조</span><textarea class="mglg-flag" data-flag="careerCreed">{{v3.flags.careerCreed}}</textarea></label>
+          <label class="mglg-fld"><span class="mglg-label">의무</span><textarea name="system.duty">{{system.duty}}</textarea></label>
+          <label class="mglg-fld"><span class="mglg-label">기관 조건 · 특기사항</span><textarea class="mglg-flag" data-flag="agencyNote">{{v3.flags.agencyNote}}</textarea></label>
+          <div class="mglg-fld"><span class="mglg-label">진정한 모습 · 효과</span>
+            <div class="mglg-line"><button type="button" class="mglg-btn mglg-true-look {{#if v3.trueLook.check}}on{{/if}}" aria-pressed="{{v3.trueLook.check}}" title="진정한 모습 사용 여부를 켜고 끕니다">{{#if v3.trueLook.check}}사용함{{else}}사용 안 함{{/if}}</button></div>
+            <input type="text" name="system.true_look.name" value="{{v3.trueLook.name}}" placeholder="이름" aria-label="진정한 모습 이름">
+            <textarea name="system.true_look.effect" aria-label="진정한 모습 효과">{{v3.trueLook.effect}}</textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="mglg-card">
+        <div class="mglg-card-head"><h2>신상</h2></div>
+        <div class="mglg-grid3">
+          <div class="mglg-fld"><span class="mglg-label">임시 이름 (시트 탭 상단에서 수정)</span><div class="mglg-field">{{v3.hero.tmpName}}</div></div>
+          <label class="mglg-fld"><span class="mglg-label">성별</span><input type="text" name="system.details.sex" value="{{system.details.sex}}"></label>
+          <label class="mglg-fld"><span class="mglg-label">연령</span><input type="text" name="system.details.age" value="{{system.details.age}}"></label>
+          <div class="mglg-fld"><span class="mglg-label">사회적 신분 (시트 탭 상단에서 수정)</span><div class="mglg-field">{{v3.hero.identify}}</div></div>
+          <label class="mglg-fld"><span class="mglg-label">종족 (황혼선서)</span><input type="text" class="mglg-flag" data-flag="race" value="{{v3.flags.race}}"></label>
+          <label class="mglg-fld"><span class="mglg-label">계제</span><input type="text" name="system.details.grade" value="{{v3.hero.grade}}"></label>
+          <label class="mglg-fld"><span class="mglg-label">작위 (황혼선서)</span><input type="text" class="mglg-flag" data-flag="rank" value="{{v3.flags.rank}}"></label>
+          <label class="mglg-fld"><span class="mglg-label">종족 신조 (황혼선서)</span><input type="text" class="mglg-flag" data-flag="raceCreed" value="{{v3.flags.raceCreed}}"></label>
+          <div class="mglg-fld"><span class="mglg-label">마력 최대치 계산</span><div class="mglg-field">1D6 + 근원력 {{v3.hero.rootForce}}</div></div>
+        </div>
+      </section>
+
+      <section class="mglg-card">
+        <div class="mglg-card-head"><h2>공적점 획득 조건</h2><span class="mglg-note">종료 페이즈에 체크</span></div>
+        <div class="mglg-grid3">
+          {{#each v3.merits}}<label class="mglg-merit"><span>{{label}}</span><input type="checkbox" class="mglg-flag" data-flag="merits.{{key}}" {{#if on}}checked{{/if}}></label>{{/each}}
+        </div>
+      </section>
+
+      <section class="mglg-card">
+        <div class="mglg-card-head"><h2>메모</h2></div>
+        {{editor enrichedBiography target="system.details.biography" button=true editable=v3.editable}}
+      </section>
+
+      <section class="mglg-card">
+        <div class="mglg-card-head"><h2>비밀</h2><span class="mglg-note">GM이 나에게 공개한 핸드아웃만 보입니다</span><span class="mglg-grow"></span>
+          <button type="button" class="mglg-btn mglg-item-create" data-type="handout" data-img="card-hand" title="핸드아웃을 추가합니다">+ 추가</button></div>
+        <div class="mglg-list">
+          {{#each v3.handouts}}
+          <div class="mglg-hand">
+            <div class="mglg-line"><b>{{name}}</b><span class="mglg-grow"></span><span class="mglg-row-tools"><a class="mglg-item-edit" data-item-id="{{id}}" title="편집"><i class="fas fa-edit"></i></a> <a class="mglg-item-delete" data-item-id="{{id}}" title="삭제"><i class="fas fa-trash"></i></a></span></div>
+            <div class="mglg-hand-body">{{{description}}}</div>
+            {{#if secret}}<hr><div class="mglg-hand-body">{{{secret}}}</div>{{/if}}
+          </div>
+          {{else}}<p class="mglg-note">보이는 핸드아웃이 없습니다.</p>{{/each}}
+        </div>
       </section>
     </div>
   </section>
