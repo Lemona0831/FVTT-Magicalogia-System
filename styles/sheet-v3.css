@@ -210,6 +210,7 @@
 /* 특기 표 */
 .mglg-sheet table.mglg-talent { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; }
 .mglg-sheet table.mglg-talent th, .mglg-sheet table.mglg-talent td { padding: 0; border: 0; }
+.mglg-sheet table.mglg-talent thead, .mglg-sheet table.mglg-talent thead tr, .mglg-sheet table.mglg-talent tbody tr { background: transparent; box-shadow: none; }
 .mglg-sheet table.mglg-talent thead tr { border-bottom: var(--head-line); }
 .mglg-sheet table.mglg-talent :is(th, td):first-child { width: 26px; }
 .mglg-sheet table.mglg-talent :is(th, td):nth-child(even) { width: 12px; }
