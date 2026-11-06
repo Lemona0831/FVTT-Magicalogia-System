@@ -83,13 +83,29 @@ Hooks.on("renderChatMessage", (message, html) => {
 });
 
 // 세션 도우미: 장면 컨트롤 버튼 (모든 사용자) + 콘솔/매크로용 game.magicalogia.openSession()
+// 어떤 경로로든 열리게: 컨트롤 버튼, 단축키(기본 Alt+S), 채팅 명령(/세션, /session), 콘솔
+const safeOpen = () => {
+  try { return openSessionHelper(); }
+  catch (e) { console.error("magicalogia | 세션 도우미를 열지 못했습니다", e); ui.notifications.error("세션 도우미를 열지 못했습니다. 콘솔(F12)을 확인하세요."); }
+};
 Hooks.once("ready", () => {
   game.magicalogia = game.magicalogia ?? {};
-  game.magicalogia.openSession = openSessionHelper;
+  game.magicalogia.openSession = safeOpen;
 });
 Hooks.on("getSceneControlButtons", (controls) => {
-  controls[0]?.tools?.push({
-    name: "mglgSession", title: "세션 도우미", icon: "fas fa-wand-sparkles", button: true,
-    onClick: () => openSessionHelper()
-  });
+  const group = controls.find((c) => c.name === "token") ?? controls[0];
+  if (!group?.tools || group.tools.some((t) => t.name === "mglgSession")) return;
+  group.tools.push({ name: "mglgSession", title: "세션 도우미", icon: "fas fa-wand-sparkles", button: true, onClick: safeOpen });
+});
+Hooks.once("init", () => {
+  try {
+    game.keybindings.register("magicalogia", "openSession", {
+      name: "세션 도우미 열기", editable: [{ key: "KeyS", modifiers: ["Alt"] }], onDown: () => { safeOpen(); return true; }
+    });
+  } catch (e) { console.warn("magicalogia | 단축키 등록 실패", e); }
+});
+Hooks.on("chatMessage", (log, message) => {
+  if (!/^\/(세션|session)\s*$/i.test(String(message).trim())) return true;
+  safeOpen();
+  return false;
 });

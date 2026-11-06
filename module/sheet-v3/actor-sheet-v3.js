@@ -1,3 +1,4 @@
+import { escapeHTML } from "./escape.js";
 import { rollTalentCard } from "./roll-card.js";
 import { tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
@@ -297,7 +298,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
     await item.update({ "system.word_check": true });
     return ChatMessage.create({
       user: game.user.id, speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      content: `<h3><b>${foundry.utils.escapeHTML(item.name)}</b></h3><b>${foundry.utils.escapeHTML(item.system.word ?? "")}</b>`
+      content: `<h3><b>${escapeHTML(item.name)}</b></h3><b>${escapeHTML(item.system.word ?? "")}</b>`
     });
   }
 

@@ -1,3 +1,4 @@
+import { escapeHTML } from "./escape.js";
 /**
  * 저항판정 도우미.
  * 주문의 지정특기 + 대상(이 캐릭터 / 원형)으로 목표치를 계산하고, 판정 카드를 굴린다.
@@ -7,7 +8,7 @@ import { resistTargets, stripRealmNumber } from "./talent-calc.js";
 import { rollTalentCard } from "./roll-card.js";
 
 const REALM_KEYS = ["A", "B", "C", "D", "E", "F"];
-const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
+const esc = (s) => escapeHTML(String(s ?? ""));
 
 function label(key) {
   let title = "";

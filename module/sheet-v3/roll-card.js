@@ -1,3 +1,4 @@
+import { escapeHTML } from "./escape.js";
 /**
  * 시트 v3 판정 + 채팅 카드. 기존 Actor#rollTalent 는 건드리지 않고 별도로 둔다.
  * 규칙: 2D6 (+보정, 불운 -1) >= 목표치. 주사위 합 12 = 스페셜(자동 성공), 2 = 펌블(자동 실패).
@@ -18,7 +19,7 @@ function askModifier(title) {
     const finish = (v) => { if (!done) { done = true; resolve(v); } };
     new Dialog({
       title: game.i18n.localize("MAGICALOGIA.RollModifier") === "MAGICALOGIA.RollModifier" ? "보정값 입력" : game.i18n.localize("MAGICALOGIA.RollModifier"),
-      content: `<p style="margin:0 0 6px">${foundry.utils.escapeHTML(title)}</p><input type="number" step="1" id="mglg-add" style="width:100%" autofocus>`,
+      content: `<p style="margin:0 0 6px">${escapeHTML(title)}</p><input type="number" step="1" id="mglg-add" style="width:100%" autofocus>`,
       buttons: {
         ok: {
           icon: '<i class="fas fa-check"></i>', label: "확인",

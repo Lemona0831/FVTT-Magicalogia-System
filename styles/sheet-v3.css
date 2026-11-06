@@ -421,7 +421,9 @@
 .mglg-resist [hidden] { display: none !important; }
 
 /* ---------- 세션 도우미 ---------- */
-.mglg-session-window .window-content { padding: 0; }
+.mglg-session-window .window-content { padding: 0; overflow: hidden; }
+.mglg-session-window { min-width: 300px; min-height: 240px; }
+.mglg-session-window .mglg-sess { box-sizing: border-box; height: 100%; overflow-y: auto; }
 .mglg-sess { --ink:#2a2352; --paper:#fff7d6; --box:#ffffff; --acc:#ff4f93; --line:#2a2352; --ok:#7ee3a8;
   padding: 10px; background: var(--paper); color: var(--ink); font-family: "Gothic A1","Malgun Gothic",sans-serif; height: 100%; overflow: auto; }
 .mglg-sess.theme-academy { --paper:#e8f1ff; --acc:#2f6fd0; }

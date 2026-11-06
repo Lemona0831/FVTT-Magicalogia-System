@@ -1,3 +1,4 @@
+import { escapeHTML } from "./escape.js";
 /**
  * 세션 도우미 (GM · PL 공용).
  *  - 장면 종류(드라마/전투/클라이맥스)와 현재 세계 법칙: GM 이 정하고 모두에게 동기화 (월드 설정 v3Session, 쓰기는 GM 만).
@@ -56,7 +57,7 @@ export class SessionHelper extends Application {
       title: "세션 도우미",
       template: "systems/magicalogia/templates/sheet-v3/session-helper.html",
       classes: ["mglg-session-window"],
-      width: 430, height: "auto", resizable: true
+      width: 430, height: 620, resizable: true, minimizable: true
     });
   }
 
@@ -85,7 +86,7 @@ export class SessionHelper extends Application {
     const gmOnly = (fn) => (...a) => { if (!game.user.isGM) return ui.notifications.warn("GM 만 바꿀 수 있습니다."); return fn(...a); };
 
     const say = (head, body) => ChatMessage.create({
-      content: `<div class="mglg-sess-chat"><b>${head}</b> · ${foundry.utils.escapeHTML(body)}</div>`, speaker: { alias: "세션" }
+      content: `<div class="mglg-sess-chat"><b>${head}</b> · ${escapeHTML(body)}</div>`, speaker: { alias: "세션" }
     });
     html.find(".mglg-sess-phase").on("click", gmOnly(async (ev) => {
       const st = getSessionState();
@@ -109,11 +110,11 @@ export class SessionHelper extends Application {
       if (st.sceneType === next) return;
       await saveState({ ...st, sceneType: next });
       const label = SCENE_TYPES.find((s) => s.id === next)?.label;
-      ChatMessage.create({ content: `<div class="mglg-sess-chat"><b>장면 전환</b> · ${foundry.utils.escapeHTML(label)}</div>`, speaker: { alias: "세션" } });
+      ChatMessage.create({ content: `<div class="mglg-sess-chat"><b>장면 전환</b> · ${escapeHTML(label)}</div>`, speaker: { alias: "세션" } });
     }));
 
     const announce = (name, text) => ChatMessage.create({
-      content: `<div class="mglg-sess-chat"><b>세계 법칙</b> · ${foundry.utils.escapeHTML(name)}${text ? `<br><span>${foundry.utils.escapeHTML(text)}</span>` : ""}</div>`,
+      content: `<div class="mglg-sess-chat"><b>세계 법칙</b> · ${escapeHTML(name)}${text ? `<br><span>${escapeHTML(text)}</span>` : ""}</div>`,
       speaker: { alias: "세션" }
     });
 
@@ -156,6 +157,7 @@ let _win = null;
 export function openSessionHelper() {
   if (!_win) _win = new SessionHelper();
   _win.render(true);
+  _win.bringToTop?.();
   return _win;
 }
 
