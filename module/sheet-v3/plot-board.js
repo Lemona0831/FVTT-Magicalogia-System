@@ -16,6 +16,7 @@ export const ZONES = [
   { key: "B_delegate", side: "B", role: "delegate", label: "B 대표", color: "#2f6fd0" },
   { key: "B_observer", side: "B", role: "observer", label: "B 입회", color: "#7fb0f0" }
 ];
+const DIE_SIZE = 70;
 const SECRET_KEY = "magicalogia.plotSecrets";
 const faceImg = (f) => `${IMG}/${f}.png`;
 const KIND_IMG = { back: `${IMG}/back.png`, random: `${IMG}/random.png`, focus: `${IMG}/focus.png` };
@@ -104,7 +105,7 @@ async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
   const zd = mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
   const r = zoneRect(zd);
-  const size = Math.max(24, Math.min(Math.round(g * 0.8), Math.round(r.w - pad * 2)));
+  const size = DIE_SIZE; // 이미지 원본 크기(70px) 그대로
   const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));
   const idx = countIn(zd);
   const x = r.x + pad + (idx % cols) * (size + pad);
