@@ -114,7 +114,7 @@ export async function gmSummon({ skill, type, effects, color, x, y, sceneId, own
   const g = sc.grid.size || 100;
   const fx = parseEffects(`${await baseEffects(type)},${effects ?? ""}`);
   const name = skill ? `${skill}의 ${type}` : type;
-  const w = 140 / g, h = 70 / g; // 가로 140px × 세로 70px
+  const w = 70 / g, h = 140 / g; // 가로 70px × 세로 140px
   const [tok] = await sc.createEmbeddedDocuments("Token", [{
     name, actorId: actor.id, actorLink: false, x: Math.round(x ?? 0), y: Math.round(y ?? 0), width: w, height: h,
     texture: { src: `${ASSET}/tokens/${t.img}.png` }, displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, disposition: 0, lockRotation: true,
