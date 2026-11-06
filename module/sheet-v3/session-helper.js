@@ -12,7 +12,7 @@ import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice
 import { loadBuiltin, tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
 import { resolveTheme } from "./actor-sheet-v3.js";
-import { KINDS, visibleItems, scenarios, currentScenario, journalHTML, info as hoInfo, secretOf, isShown, shownToAll, createHandout, createEnemy, createScenario, setShown, setShownAll, removeHandout } from "./handout.js";
+import { KINDS, visibleItems, scenarios, currentScenario, journalHTML, info as hoInfo, secretOf, isShown, shownToAll, createHandout, createEnemy, createScenario, whoSees, setShown, setShownAll, removeHandout } from "./handout.js";
 import { MISSION, calcMerit, prefill, breakdown, settleActors, applyMerit } from "./settle.js";
 
 export const SCENE_TYPES = [
@@ -107,6 +107,7 @@ export class SessionHelper extends Application {
           id: j.id, name: j.name, open, talent: f.talent, hasSecret: !!f.secretId,
           html: open ? await journalHTML(j) : "",
           secretShown: !!sj && open, secretHtml: sj && open ? await journalHTML(sj) : "",
+          secretWho: gm ? whoSees(sj) : "",
           pubAll: shownToAll(j), secAll: shownToAll(sj),
           pubUsers: players.map((u) => ({ id: u.id, name: u.name, on: isShown(j, u) })),
           secUsers: sj ? players.map((u) => ({ id: u.id, name: u.name, on: isShown(sj, u) })) : []

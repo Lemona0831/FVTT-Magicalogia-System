@@ -62,7 +62,7 @@ export async function journalHTML(j) {
 async function rowFor(j, selId) {
   const f = info(j), s = secretOf(j), on = j.id === selId;
   const row = { id: j.id, name: j.name, hasSecret: !!f.secretId, talent: f.talent, on };
-  if (on) Object.assign(row, { html: await journalHTML(j), secretShown: !!s, secretHtml: s ? await journalHTML(s) : "" });
+  if (on) Object.assign(row, { html: await journalHTML(j), secretShown: !!s, secretHtml: s ? await journalHTML(s) : "", secretWho: game.user.isGM ? whoSees(s) : "" });
   return row;
 }
 
@@ -77,6 +77,8 @@ export async function sheetRows(selId) {
 }
 
 export const isShown = (j, user) => !!j && j.testUserPermission(user, "OBSERVER");
+/** 이 저널을 볼 수 있는 플레이어 이름들 (GM 화면의 공개 대상 표시용) */
+export const whoSees = (j) => (j ? game.users.filter((u) => !u.isGM && j.testUserPermission(u, "OBSERVER")).map((u) => u.name).join(", ") : "");
 export const shownToAll = (j) => !!j && j.ownership?.default >= OBS();
 
 const toHTML = (body) => String(body ?? "").split(/\n{2,}/).filter((t) => t.trim()).map((t) => `<p>${escapeHTML(t).replace(/\n/g, "<br>")}</p>`).join("");

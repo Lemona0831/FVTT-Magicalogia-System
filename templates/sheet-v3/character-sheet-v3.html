@@ -250,6 +250,7 @@
               {{#if hasSecret}}
               <section class="mglg-ho3-col sec">
                 <div class="mglg-ho-label">비밀{{#if talent}} · 조사 특기: {{talent}}{{/if}}</div>
+                {{#if @root.v3.isGM}}<div class="mglg-ho3-gmnote {{#unless secretWho}}none{{/unless}}">GM 화면 · {{#if secretWho}}공개된 사람: {{secretWho}}{{else}}아직 아무에게도 공개 안 됨 (플레이어에게는 안 보입니다){{/if}}</div>{{/if}}
                 {{#if secretShown}}<div class="mglg-hand-body mglg-ho-secret">{{{secretHtml}}}</div>
                 {{else}}<p class="mglg-ho3-lock">🔒 비공개{{#if talent}}<br><small>{{talent}} (으)로 조사하세요</small>{{/if}}</p>{{/if}}
               </section>
