@@ -514,3 +514,8 @@
 .mglg-plot .ph, .mglg-plot .pres, .mglg-plot .pk { display: none; }
 .mglg-plot .pn { margin: 6px 0 0; padding: 0; font-size: 13px; list-style: none; }
 .mglg-plot .pvs { margin: 0 0 6px; }
+
+/* 제거된 주사위: 눈은 그대로 보이게 두고 빨간 사선으로 지운다 */
+.mglg-plot .pd.gone { border-color: #c9c3e6; background: #f1eff9; }
+.mglg-plot .pd.gone img { opacity: .5; filter: grayscale(.6); }
+.mglg-plot .pd.gone::after { content: ""; inset: 3px; font-size: 0; background: linear-gradient(to top right, transparent calc(50% - 2.5px), #d63a4e calc(50% - 2.5px), #d63a4e calc(50% + 2.5px), transparent calc(50% + 2.5px)); }
