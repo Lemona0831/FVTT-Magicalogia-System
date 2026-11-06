@@ -92,6 +92,19 @@ export function addDie({ zone, kind, face = null }) {
   game.socket.emit("system.magicalogia", { id: "v3plot", sender: game.user.id, receiver: gm.id, data: { op: "add", sceneId: scene().id, ...data } });
 }
 
+/** 구역 안에서 비어 있는 첫 칸 위치 (다른 주사위와 겹치지 않는 곳) */
+function freeSlot(sc, zd, excludeId = null) {
+  const pad = 8, size = DIE_SIZE, r = zoneRect(zd);
+  const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));
+  const others = sc.tiles.filter((t) => dieOf(t) && t.id !== excludeId);
+  for (let idx = 0; idx < 200; idx++) {
+    const x = r.x + pad + (idx % cols) * (size + pad);
+    const y = r.y + 40 + Math.floor(idx / cols) * (size + pad);
+    if (!others.some((t) => Math.abs(t.x - x) < size * 0.6 && Math.abs(t.y - y) < size * 0.6)) return { x, y };
+  }
+  return { x: r.x + pad, y: r.y + 40 };
+}
+
 async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   const sc = sceneId ? game.scenes.get(sceneId) : scene();
   const areas = getZones(sc)[zone];
@@ -104,12 +117,8 @@ async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   const ordered = [...areas].sort((a, b) => a.y - b.y || a.x - b.x);
   const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
   const zd = mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
-  const r = zoneRect(zd);
   const size = DIE_SIZE; // 이미지 원본 크기(70px) 그대로
-  const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));
-  const idx = countIn(zd);
-  const x = r.x + pad + (idx % cols) * (size + pad);
-  const y = r.y + 40 + Math.floor(idx / cols) * (size + pad);
+  const { x, y } = freeSlot(sc, zd);
   const [tile] = await sc.createEmbeddedDocuments("Tile", [{
     x, y, width: size, height: size, texture: { src: KIND_IMG.back },
     flags: { magicalogia: { die: { zone, kind, owner, revealed: false } } }
@@ -209,6 +218,27 @@ export async function resolvePlot(attackerSide) {
   </div>`;
   ChatMessage.create({ content, speaker: { alias: "세션" } });
 }
+
+/* ---------- 끌어당기기: GM 이 주사위를 놓으면 가장 가까운 구역의 빈 칸으로 붙인다 ---------- */
+Hooks.on("updateTile", async (tile, change, options, userId) => {
+  if (!game.user.isGM || userId !== game.user.id || options?.mglgSnap) return;
+  const d = dieOf(tile);
+  if (!d || !("x" in change || "y" in change)) return;
+  const sc = tile.parent; if (!sc) return;
+  const cx = tile.x + tile.width / 2, cy = tile.y + tile.height / 2;
+  let best = null;
+  for (const [key, list] of Object.entries(getZones(sc))) {
+    for (const zd of list) {
+      const r = zoneRect(zd);
+      const dx = Math.max(r.x - cx, 0, cx - (r.x + r.w)), dy = Math.max(r.y - cy, 0, cy - (r.y + r.h));
+      const dist = Math.hypot(dx, dy);
+      if (!best || dist < best.dist) best = { key, zd, dist };
+    }
+  }
+  if (!best || best.dist > (sc.grid.size || 100) * 4) return; // 구역에서 너무 멀면 그대로 둔다
+  const { x, y } = freeSlot(sc, best.zd, tile.id);
+  await tile.update({ x, y, "flags.magicalogia.die.zone": best.key }, { mglgSnap: true });
+});
 
 /* ---------- 소켓 (GM 쪽) ---------- */
 export function initBoard() {
