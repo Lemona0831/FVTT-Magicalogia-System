@@ -3,8 +3,49 @@
     <button type="button" class="mglg-sess-tab {{#if tab.status}}on{{/if}}" data-tab="status">상태</button>
     <button type="button" class="mglg-sess-tab {{#if tab.roll}}on{{/if}}" data-tab="roll">판정·표</button>
     <button type="button" class="mglg-sess-tab {{#if tab.plot}}on{{/if}}" data-tab="plot">플롯</button>
+    <button type="button" class="mglg-sess-tab {{#if tab.arch}}on{{/if}}" data-tab="arch">원형</button>
     {{#if isGM}}<button type="button" class="mglg-sess-tab gm {{#if tab.gm}}on{{/if}}" data-tab="gm">GM</button>{{/if}}
   </nav>
+
+  {{#if tab.arch}}
+  <section class="mglg-sess-box">
+    <h3>원형 소환</h3>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">특기</span>
+      <select class="mglg-arch-skill">
+        <option value="">(특기 없음)</option>
+        {{#each skills}}<optgroup label="{{realm}}">{{#each items}}<option value="{{name}}">{{no}} · {{name}}</option>{{/each}}</optgroup>{{/each}}
+      </select>
+    </div>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">타입</span>
+      <select class="mglg-arch-type">{{#each types}}<option value="{{name}}" data-base="{{base}}">{{name}}</option>{{/each}}</select>
+    </div>
+    <p class="mglg-sess-hint">기본 이펙트: <b class="mglg-arch-base">-</b></p>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">추가 이펙트</span>
+      <input type="text" class="mglg-arch-fx" placeholder="예: 블록1, 부스트2">
+    </div>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">마커 색</span>
+      <select class="mglg-arch-color"><option value="w">백</option><option value="b">흑</option></select>
+    </div>
+    <div class="mglg-sess-row"><button type="button" class="mglg-arch-go on">소환</button></div>
+    <p class="mglg-sess-hint">현재 화면 중앙 근처에 토큰이 생깁니다. 이펙트는 블록=토큰 아래 막대, 나머지=숫자가 있는 마커 아이콘으로 표시됩니다. 이펙트 별칭: 블록·추댐·부스트·캐스트·마나·워드·마이너스·플러스·스펠가드.</p>
+  </section>
+  {{#if isGM}}
+  <div class="mglg-sess-gm">
+  <section class="mglg-sess-box">
+    <h3>선택한 원형</h3>
+    <div class="mglg-sess-row">
+      <button type="button" class="mglg-arch-edit">이펙트 수정</button>
+      <button type="button" class="mglg-arch-del">삭제</button>
+    </div>
+    <p class="mglg-sess-hint">맵에서 원형 토큰을 선택한 뒤 누르세요. 블록 수치는 토큰 막대를 직접 고치면 됩니다.</p>
+  </section>
+  </div>
+  {{/if}}
+  {{/if}}
 
   {{#if tab.plot}}
   <section class="mglg-sess-box">

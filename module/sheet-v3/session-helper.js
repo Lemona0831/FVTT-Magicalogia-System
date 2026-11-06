@@ -1,4 +1,6 @@
 import { escapeHTML } from "./escape.js";
+import { TYPES, baseEffects, summon, selectedArchetypes, editEffects, removeArchetypes, effectsToString, parseEffects } from "./archetype.js";
+import { realmName, talentName } from "./resist.js";
 import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver, getZones, getDelegate, setDelegate, myRole, getFirst, setFirst, relabelZones, SIDE } from "./plot-board.js";
 /**
  * 세션 도우미 (GM · PL 공용).
@@ -85,7 +87,9 @@ export class SessionHelper extends Application {
     if (this._tab === "gm" && !game.user.isGM) this._tab = "status";
     const tab = this._tab ?? "status";
     return {
-      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", gm: tab === "gm" },
+      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", arch: tab === "arch", gm: tab === "gm" },
+      skills: tab === "arch" ? Array.from({ length: 6 }, (_, r) => ({ realm: realmName(r), items: Array.from({ length: 11 }, (_, row) => ({ no: row + 2, name: talentName(r, row) })) })) : [],
+      types: tab === "arch" ? await Promise.all(TYPES.map(async (t) => ({ name: t.name, base: effectsToString(parseEffects(await baseEffects(t.name))) }))) : [],
       zones: placeTargets(), myRole: myRole(), firstA: getFirst() === "A", firstB: getFirst() === "B", firstSide: getFirst(), secondSide: getFirst() === "A" ? "B" : "A", firstName: SIDE[getFirst()], secondName: SIDE[getFirst() === "A" ? "B" : "A"], delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
       observers: observerAreas().map((o) => ({ ...o, users: game.users.map((u) => ({ id: u.id, name: u.name, sel: u.id === o.owner })), auto: !o.owner })),
       theme: resolveTheme(),
@@ -117,6 +121,28 @@ export class SessionHelper extends Application {
     html.find(".mglg-plot-delegate").on("change", gmOnly(async (ev) => { await setDelegate(ev.currentTarget.value); this.render(); }));
     html.find(".mglg-plot-first").on("change", gmOnly(async (ev) => { await setFirst(ev.currentTarget.value); this.render(); }));
     html.find(".mglg-plot-relabel").on("click", gmOnly(() => relabelZones()));
+    const showBase = () => html.find(".mglg-arch-base").text(html.find(".mglg-arch-type option:selected").data("base") || "없음");
+    html.find(".mglg-arch-type").on("change", showBase); showBase();
+    html.find(".mglg-arch-go").on("click", () => summon({
+      skill: html.find(".mglg-arch-skill").val(), type: html.find(".mglg-arch-type").val(),
+      effects: html.find(".mglg-arch-fx").val(), color: html.find(".mglg-arch-color").val()
+    }));
+    html.find(".mglg-arch-edit").on("click", gmOnly(async () => {
+      const toks = selectedArchetypes();
+      if (!toks.length) return ui.notifications.warn("맵에서 원형 토큰을 먼저 선택하세요.");
+      const cur = effectsToString(toks[0].getFlag("magicalogia", "archetype").effects ?? {});
+      new Dialog({
+        title: "원형 이펙트 수정",
+        content: `<p>선택한 원형 ${toks.length}개의 이펙트를 아래 내용으로 바꿉니다.</p><input type="text" id="mglg-fx" value="${escapeHTML(cur)}" style="width:100%" placeholder="예: 블록2, 부스트1">`,
+        buttons: { ok: { label: "적용", callback: async (h) => { for (const t of toks) await editEffects(t, h.find("#mglg-fx").val()); } }, cancel: { label: "취소" } },
+        default: "ok"
+      }).render(true);
+    }));
+    html.find(".mglg-arch-del").on("click", gmOnly(async () => {
+      const toks = selectedArchetypes();
+      if (!toks.length) return ui.notifications.warn("맵에서 원형 토큰을 먼저 선택하세요.");
+      await removeArchetypes(toks);
+    }));
     html.find(".mglg-plot-mine").on("click", () => clearMine());
     html.find(".mglg-plot-make").on("click", gmOnly(async () => { await createZones(); this.render(); }));
     html.find(".mglg-plot-unmake").on("click", gmOnly(async () => { await removeZones(); this.render(); }));

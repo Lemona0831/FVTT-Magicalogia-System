@@ -15,8 +15,8 @@ function label(key) {
   try { title = game.settings.get("magicalogia", key); } catch (e) { /* 설정 미등록 */ }
   return title !== "" && title != null ? title : game.i18n.localize(key);
 }
-const realmName = (i) => stripRealmNumber(label(`MAGICALOGIA.${REALM_KEYS[i]}1`));
-const talentName = (realm, row) => label(`MAGICALOGIA.${REALM_KEYS[realm]}${row + 2}`);
+export const realmName = (i) => stripRealmNumber(label(`MAGICALOGIA.${REALM_KEYS[i]}1`));
+export const talentName = (realm, row) => label(`MAGICALOGIA.${REALM_KEYS[realm]}${row + 2}`);
 
 const realmOptions = (sel) => REALM_KEYS.map((_, i) => `<option value="${i}" ${i === sel ? "selected" : ""}>${esc(realmName(i))}</option>`).join("");
 const talentOptions = (realm, sel) => Array.from({ length: 11 }, (_, r) => `<option value="${r}" ${r === sel ? "selected" : ""}>${r + 2} · ${esc(talentName(realm, r))}</option>`).join("");
