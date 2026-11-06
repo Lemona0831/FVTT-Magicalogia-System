@@ -1,6 +1,7 @@
 import { MagicalogiaActorSheetV3 } from "./actor-sheet-v3.js";
 import { TablesConfigApp } from "./tables.js";
 import { openSessionHelper, refreshSessionHelper } from "./session-helper.js";
+import { initBoard } from "./plot-board.js";
 
 export const THEMES = ["rulebook", "academy", "summer", "urban"];
 
@@ -91,6 +92,7 @@ const safeOpen = () => {
 Hooks.once("ready", () => {
   game.magicalogia = game.magicalogia ?? {};
   game.magicalogia.openSession = safeOpen;
+  try { initBoard(); } catch (e) { console.warn("magicalogia | 플롯 보드 소켓 등록 실패", e); }
 });
 Hooks.on("getSceneControlButtons", (controls) => {
   const group = controls.find((c) => c.name === "token") ?? controls[0];
@@ -109,3 +111,5 @@ Hooks.on("chatMessage", (log, message) => {
   safeOpen();
   return false;
 });
+
+for (const h of ["canvasReady", "createDrawing", "deleteDrawing", "updateDrawing"]) Hooks.on(h, () => refreshSessionHelper());

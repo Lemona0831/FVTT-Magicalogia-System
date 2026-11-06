@@ -2,8 +2,44 @@
   <nav class="mglg-sess-tabs">
     <button type="button" class="mglg-sess-tab {{#if tab.status}}on{{/if}}" data-tab="status">상태</button>
     <button type="button" class="mglg-sess-tab {{#if tab.roll}}on{{/if}}" data-tab="roll">판정·표</button>
+    <button type="button" class="mglg-sess-tab {{#if tab.plot}}on{{/if}}" data-tab="plot">플롯</button>
     {{#if isGM}}<button type="button" class="mglg-sess-tab gm {{#if tab.gm}}on{{/if}}" data-tab="gm">GM</button>{{/if}}
   </nav>
+
+  {{#if tab.plot}}
+  <section class="mglg-sess-box">
+    <h3>주사위 놓기</h3>
+    {{#unless hasZones}}<p class="mglg-sess-empty">이 장면에 플롯 구역이 없습니다.{{#if isGM}} 아래 'GM 도구'에서 만드세요.{{else}} GM 이 구역을 만들면 쓸 수 있습니다.{{/if}}</p>{{/unless}}
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">놓을 구역</span>
+      <select class="mglg-plot-zone">{{#each zones}}<option value="{{key}}">{{label}}</option>{{/each}}</select>
+    </div>
+    <div class="mglg-plot-dice">
+      {{#each faces}}<button type="button" class="mglg-plot-add" data-kind="face" data-face="{{this}}" title="{{this}}"><img src="systems/magicalogia/assets/plot/dice/{{this}}.png" alt="{{this}}"></button>{{/each}}
+      <button type="button" class="mglg-plot-add" data-kind="random" title="무작위"><img src="systems/magicalogia/assets/plot/dice/random.png" alt="랜덤"></button>
+      <button type="button" class="mglg-plot-add" data-kind="focus" title="집중 방어"><img src="systems/magicalogia/assets/plot/dice/focus.png" alt="집중"></button>
+    </div>
+    <p class="mglg-sess-hint">누르면 뒷면 주사위가 구역에 놓입니다. 눈은 공개 전까지 다른 사람에게 보이지 않습니다. 집중 방어는 대표 구역에 눈 주사위 2개 + 집중 토큰을 놓으세요.</p>
+    <div class="mglg-sess-row"><button type="button" class="mglg-plot-mine">내 주사위 거두기</button></div>
+  </section>
+  {{#if isGM}}
+  <div class="mglg-sess-gm">
+  <section class="mglg-sess-box">
+    <h3>GM 도구</h3>
+    <div class="mglg-sess-row">
+      <button type="button" class="mglg-plot-make">구역 만들기</button>
+      <button type="button" class="mglg-plot-unmake">구역 지우기</button>
+    </div>
+    <div class="mglg-sess-row"><button type="button" class="mglg-plot-reveal on">공개</button></div>
+    <div class="mglg-sess-row">
+      <button type="button" class="mglg-plot-resolve" data-side="A">A 공격 비교</button>
+      <button type="button" class="mglg-plot-resolve" data-side="B">B 공격 비교</button>
+    </div>
+    <div class="mglg-sess-row"><button type="button" class="mglg-plot-clear">주사위 모두 치우기</button></div>
+  </section>
+  </div>
+  {{/if}}
+  {{/if}}
 
   {{#if tab.status}}
   <section class="mglg-sess-box">

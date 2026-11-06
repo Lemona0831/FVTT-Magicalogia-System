@@ -480,3 +480,8 @@
 .mglg-sess button { font-size: 14px; }
 .mglg-sess-gm .mglg-sess-box { border-style: dashed; border-color: #ff4f93 !important; box-shadow: 3px 3px 0 #ff4f93; }
 .mglg-sess-gm h3::before { content: "GM"; margin-right: 6px; padding: 0 6px; border-radius: 6px; background: #2a2352; color: #ffd23f !important; font-size: 11px; }
+/* 플롯 탭 */
+.mglg-plot-dice { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.mglg-sess .mglg-plot-dice button { padding: 2px !important; line-height: 0; border-radius: 10px; }
+.mglg-plot-dice img { width: 40px; height: 40px; display: block; border: 0; }
+.mglg-sess-hint { margin: 4px 0 0; font-size: 13px; line-height: 1.5; opacity: .85; }

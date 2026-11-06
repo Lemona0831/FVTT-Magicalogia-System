@@ -1,4 +1,5 @@
 import { escapeHTML } from "./escape.js";
+import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot } from "./plot-board.js";
 /**
  * 세션 도우미 (GM · PL 공용).
  *  - 장면 종류(드라마/전투/클라이맥스)와 현재 세계 법칙: GM 이 정하고 모두에게 동기화 (월드 설정 v3Session, 쓰기는 GM 만).
@@ -71,7 +72,8 @@ export class SessionHelper extends Application {
     if (this._tab === "gm" && !game.user.isGM) this._tab = "status";
     const tab = this._tab ?? "status";
     return {
-      tab: { status: tab === "status", roll: tab === "roll", gm: tab === "gm" },
+      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", gm: tab === "gm" },
+      zones: ZONES, faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
       theme: resolveTheme(),
       isGM: game.user.isGM,
       phase: { ...ph, types: PHASES.map((p) => ({ ...p, on: p.id === ph.id })) },
@@ -88,6 +90,16 @@ export class SessionHelper extends Application {
     super.activateListeners(html);
     const gmOnly = (fn) => (...a) => { if (!game.user.isGM) return ui.notifications.warn("GM 만 바꿀 수 있습니다."); return fn(...a); };
 
+    html.find(".mglg-plot-add").on("click", (ev) => {
+      const b = ev.currentTarget;
+      addDie({ zone: html.find(".mglg-plot-zone").val(), kind: b.dataset.kind, face: b.dataset.face ?? null });
+    });
+    html.find(".mglg-plot-mine").on("click", () => clearMine());
+    html.find(".mglg-plot-make").on("click", gmOnly(async () => { await createZones(); this.render(); }));
+    html.find(".mglg-plot-unmake").on("click", gmOnly(async () => { await removeZones(); this.render(); }));
+    html.find(".mglg-plot-reveal").on("click", gmOnly(() => revealAll()));
+    html.find(".mglg-plot-resolve").on("click", gmOnly((ev) => resolvePlot(ev.currentTarget.dataset.side)));
+    html.find(".mglg-plot-clear").on("click", gmOnly(() => clearDice()));
     html.find(".mglg-sess-tab").on("click", (ev) => { this._tab = ev.currentTarget.dataset.tab; this.render(); });
     const say = (head, body) => ChatMessage.create({
       content: `<div class="mglg-sess-chat"><b>${head}</b> · ${escapeHTML(body)}</div>`, speaker: { alias: "세션" }
