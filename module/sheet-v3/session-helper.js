@@ -14,7 +14,12 @@ export const SCENE_TYPES = [
   { id: "battle", label: "전투 장면" },
   { id: "climax", label: "클라이맥스" }
 ];
-const DEFAULT_STATE = { sceneType: "drama", laws: [] };
+export const PHASES = [
+  { id: "intro", label: "도입" },
+  { id: "main", label: "메인", main: true },
+  { id: "climax", label: "클라이맥스" }
+];
+const DEFAULT_STATE = { sceneType: "drama", phase: "intro", cycle: 1, laws: [] };
 const LAW_TABLE = "세계 법칙 (일람)";
 
 export function getSessionState() {
@@ -61,9 +66,12 @@ export class SessionHelper extends Application {
     const cur = SCENE_TYPES.find((s) => s.id === st.sceneType) ?? SCENE_TYPES[0];
     const inUse = new Set(st.laws.map((l) => l.name));
     const actor = myActor();
+    const ph = PHASES.find((p) => p.id === st.phase) ?? PHASES[0];
     return {
       theme: resolveTheme(),
       isGM: game.user.isGM,
+      phase: { ...ph, types: PHASES.map((p) => ({ ...p, on: p.id === ph.id })) },
+      cycle: Math.max(1, Number(st.cycle) || 1),
       scene: { ...cur, types: SCENE_TYPES.map((s) => ({ ...s, on: s.id === cur.id })) },
       laws: st.laws.map((l, i) => ({ i, name: l.name, text: l.text ?? book.get(l.name) ?? "" })),
       lawOptions: [...book.keys()].filter((n) => !inUse.has(n)),
@@ -75,6 +83,25 @@ export class SessionHelper extends Application {
   activateListeners(html) {
     super.activateListeners(html);
     const gmOnly = (fn) => (...a) => { if (!game.user.isGM) return ui.notifications.warn("GM 만 바꿀 수 있습니다."); return fn(...a); };
+
+    const say = (head, body) => ChatMessage.create({
+      content: `<div class="mglg-sess-chat"><b>${head}</b> · ${foundry.utils.escapeHTML(body)}</div>`, speaker: { alias: "세션" }
+    });
+    html.find(".mglg-sess-phase").on("click", gmOnly(async (ev) => {
+      const st = getSessionState();
+      const next = ev.currentTarget.dataset.id;
+      if (st.phase === next) return;
+      await saveState({ ...st, phase: next });
+      const p = PHASES.find((x) => x.id === next);
+      say("진행 단계", p.main ? `${p.label} ${Math.max(1, Number(st.cycle) || 1)}사이클` : p.label);
+    }));
+    html.find(".mglg-sess-cycle").on("click", gmOnly(async (ev) => {
+      const st = getSessionState();
+      const cycle = Math.max(1, (Number(st.cycle) || 1) + Number(ev.currentTarget.dataset.d));
+      if (cycle === st.cycle) return;
+      await saveState({ ...st, cycle });
+      say("사이클", `${cycle}사이클`);
+    }));
 
     html.find(".mglg-sess-scene").on("click", gmOnly(async (ev) => {
       const st = getSessionState();

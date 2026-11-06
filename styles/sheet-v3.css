@@ -443,5 +443,21 @@
 .mglg-sess-custom { margin-top: 8px; font-size: 12px; }
 .mglg-sess-custom input, .mglg-sess-custom textarea { width: 100%; margin: 4px 0; box-sizing: border-box; }
 .mglg-sess-who { font-size: 13px; }
+/* 가독성 고정: 코어/다른 모듈 CSS 에 색·폭이 덮이지 않게 */
+.mglg-sess, .mglg-sess * { color: var(--ink) !important; text-shadow: none !important; }
+.mglg-sess .mglg-sess-badge { color: #2a2352 !important; }
+.mglg-sess button.on { color: #fff !important; }
+.mglg-sess-box { background: var(--box) !important; }
+.mglg-sess h3 { font-size: 14px !important; }
+.mglg-sess-empty, .mglg-sess-law-text { opacity: 1 !important; }
+.mglg-sess-empty { font-size: 13px; }
+.mglg-sess button { flex: 0 0 auto !important; width: auto !important; height: auto !important; margin: 0 !important; white-space: nowrap; background: var(--box) !important; }
+.mglg-sess button.on { background: var(--acc) !important; }
+.mglg-sess .mglg-sess-row select { flex: 1 1 auto !important; width: auto !important; height: 28px !important; min-width: 0; padding: 0 4px; }
+.mglg-sess select, .mglg-sess input, .mglg-sess textarea { background: var(--box) !important; border: 1.5px solid var(--line) !important; }
+.mglg-sess-row { flex-wrap: wrap; }
+.mglg-sess-row .mglg-sess-who { flex: 1 1 120px; }
+.mglg-sess-row > button.mglg-sess-scene, .mglg-sess-row > button.mglg-sess-phase { flex: 1 1 auto !important; }
+.mglg-sess-cyc-n { min-width: 28px; text-align: center; font-size: 18px; }
 .mglg-sess-chat { padding: 6px 10px; border: 2px solid #2a2352; border-radius: 10px; background: #fff7d6; color: #2a2352; font-size: 13px; }
 .mglg-sess-chat span { font-size: 12px; line-height: 1.5; }

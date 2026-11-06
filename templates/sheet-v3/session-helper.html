@@ -1,5 +1,21 @@
 <div class="mglg-sess theme-{{theme}}">
   <section class="mglg-sess-box">
+    <h3>진행 단계</h3>
+    <div class="mglg-sess-badge">{{phase.label}}{{#if phase.main}} · {{cycle}}사이클{{/if}}</div>
+    {{#if isGM}}
+    <div class="mglg-sess-row">
+      {{#each phase.types}}<button type="button" class="mglg-sess-phase {{#if on}}on{{/if}}" data-id="{{id}}">{{label}}</button>{{/each}}
+    </div>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">사이클</span>
+      <button type="button" class="mglg-sess-cycle mini" data-d="-1">−</button>
+      <b class="mglg-sess-cyc-n">{{cycle}}</b>
+      <button type="button" class="mglg-sess-cycle mini" data-d="1">＋</button>
+    </div>
+    {{/if}}
+  </section>
+
+  <section class="mglg-sess-box">
     <h3>지금 장면</h3>
     <div class="mglg-sess-badge">{{scene.label}}</div>
     {{#if isGM}}
