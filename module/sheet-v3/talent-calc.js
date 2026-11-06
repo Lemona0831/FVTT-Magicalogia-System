@@ -84,3 +84,37 @@ export function gapsForCuriosity(curiosity) {
 
 /** 영역 제목의 번호 접두사 제거: "1. 별" → "별" */
 export const stripRealmNumber = (s) => String(s ?? "").replace(/^\s*\d+\.\s*/, "");
+
+/**
+ * 저항판정 목표치 (룰북 16.03.02 / 19장).
+ *  - 캐릭터: 자기 특기표에서 지정특기 칸의 목표치.
+ *  - 원형: 특기를 1개만 가지며 그 영역의 존재로 간주되고, 자기 영역 좌우 갭이 칠해진 것으로 본다.
+ *    즉 "원형의 특기 1칸만 습득 + 그 영역 갭(gapsForCuriosity)을 칠한 표"에서 지정특기 칸의 목표치.
+ *  - [워드 n]: 자신 또는 자신이 사역하는 원형이 목표가 됐을 때 목표치를 n 으로 바꿀 수 있다.
+ *    단, 지정특기가 워드 소유자의 영역에 속하는 주문뿐이다 → wardTarget 은 그때만 숫자, 아니면 null.
+ * @param {object} o
+ * @param {"actor"|"archetype"} o.kind
+ * @param {number} o.realm  지정특기 영역 0..5
+ * @param {number} o.row    지정특기 행 0..10
+ * @param {Array} [o.table] kind=actor : 특기표
+ * @param {object} [o.gap]  kind=actor : 갭
+ * @param {boolean} [o.overflowX]
+ * @param {number} [o.symRealm] kind=archetype : 원형 특기 영역 0..5
+ * @param {number} [o.symRow]   kind=archetype : 원형 특기 행 0..10
+ * @param {number|null} [o.ward] [워드 n] 의 n (없으면 null)
+ * @param {number|null} [o.wardRealm] 워드 소유자의 영역 0..5 (없으면 null)
+ * @returns {{target:number, wardTarget:number|null}}
+ */
+export function resistTargets(o) {
+  let target;
+  if (o.kind === "archetype") {
+    const t = Array.from({ length: REALMS }, () => Array.from({ length: ROWS }, () => ({ state: false, misfortune: false })));
+    t[o.symRealm][o.symRow].state = true;
+    target = computeTargets(t, gapsForCuriosity(o.symRealm + 1), false)[o.realm][o.row];
+  } else {
+    target = computeTargets(o.table, o.gap, !!o.overflowX)[o.realm][o.row];
+  }
+  const w = o.ward != null && o.ward !== "" ? Number(o.ward) : null;
+  const wardTarget = (w != null && Number.isFinite(w) && o.wardRealm != null && Number(o.wardRealm) === o.realm) ? w : null;
+  return { target, wardTarget };
+}

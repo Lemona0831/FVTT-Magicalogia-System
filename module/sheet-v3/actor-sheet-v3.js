@@ -1,5 +1,6 @@
 import { rollTalentCard } from "./roll-card.js";
 import { tableOptions, rollConfigured } from "./tables.js";
+import { openResistDialog } from "./resist.js";
 import { computeTargets, realmDebuff, gapsForCuriosity, stripRealmNumber, REALMS, ROWS } from "./talent-calc.js";
 
 const REALM_KEYS = ["A", "B", "C", "D", "E", "F"];
@@ -201,6 +202,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
 
     html.find(".mglg-cell").on("click", this._onRollCell.bind(this));
     html.find(".mglg-spirit-roll").on("click", this._onRollSpirit.bind(this));
+    html.find(".mglg-resist").on("click", (ev) => { ev.preventDefault(); openResistDialog(this.actor, resolveTheme()); });
     html.find(".mglg-cell").on("contextmenu", this._onToggleMisfortune.bind(this));
     html.find(".mglg-acquire").on("change", this._onToggleAcquire.bind(this));
     html.find(".mglg-gap").on("click", this._onToggleGap.bind(this));

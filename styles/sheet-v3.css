@@ -408,3 +408,14 @@
 .mglg-tc-col label input { margin:0; } .mglg-tc-col label .dice { margin-left:auto; font-size:10px; opacity:.55; }
 .mglg-tc-addname { display:flex; gap:4px; margin-top:6px; } .mglg-tc-addname input { flex:1; }
 .mglg-tc-foot { display:flex; justify-content:space-between; }
+
+/* ---------- 저항 판정 창 ---------- */
+.mglg-resist-dialog .window-content { padding: 8px 12px; }
+.mglg-resist fieldset { margin: 0 0 8px; padding: 4px 10px 8px; border: 1px solid #b6b0a0; border-radius: 6px; }
+.mglg-resist legend { font-size: 12px; font-weight: 700; padding: 0 4px; }
+.mglg-resist .r { display: flex; align-items: center; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+.mglg-resist select { flex: 1; min-width: 120px; }
+.mglg-resist .hint { font-size: 11px; opacity: .65; }
+.mglg-resist .mglg-resist-out { margin: 4px 0 0; padding: 6px 10px; text-align: center; font-size: 15px; border: 2px solid #2a2352; border-radius: 10px; background: #fff7d6; color: #2a2352; }
+.mglg-resist .mglg-resist-out b { font-size: 22px; color: #ff4f93; }
+.mglg-resist [hidden] { display: none !important; }

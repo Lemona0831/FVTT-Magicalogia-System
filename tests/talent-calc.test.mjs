@@ -1,6 +1,6 @@
 // 실행: node tests/talent-calc.test.mjs
 import assert from "node:assert/strict";
-import { computeTargets, realmDebuff, gapsForCuriosity, stripRealmNumber } from "../module/sheet-v3/talent-calc.js";
+import { computeTargets, realmDebuff, gapsForCuriosity, stripRealmNumber, resistTargets } from "../module/sheet-v3/talent-calc.js";
 
 // 기존 module/document/actor.js:67-116 의 _getTalentTable 을 그대로 옮긴 기준 구현 (문자열 num 포함)
 function legacy(table, gap, overflowX) {
@@ -110,5 +110,25 @@ assert.deepEqual(gapsForCuriosity(0), noGap());
 // 9) 접두사 제거
 assert.equal(stripRealmNumber("1. 별"), "별");
 assert.equal(stripRealmNumber("황금"), "황금");
+
+// 10) 저항 목표치
+{
+  // 캐릭터: 습득 칸 5, 같은 열 위아래 +1
+  const t = empty(); t[1][4].state = true;
+  assert.equal(resistTargets({ kind: "actor", table: t, gap: noGap(), realm: 1, row: 4 }).target, 5);
+  assert.equal(resistTargets({ kind: "actor", table: t, gap: noGap(), realm: 1, row: 5 }).target, 6);
+  // 원형: 특기 1칸 = 5, 옆 영역은 갭이 칠해져 +1 (자기 영역 좌우 갭)
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 1, row: 4 }).target, 5);
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 2, row: 4 }).target, 6);
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 0, row: 4 }).target, 6);
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 3, row: 4 }).target, 8); // 2칸 떨어짐: 6 + 2
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 1, row: 7 }).target, 8);
+  // 어둠(5) 원형: 어둠 왼쪽 갭 + 별 왼쪽 갭. 짐승(1)->별(0)은 별 왼쪽 갭이 아니라 gap[1]
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 5, symRow: 0, realm: 4, row: 0 }).target, 6);
+  // 워드: 지정특기가 워드 소유자의 영역일 때만 적용 가능
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 1, row: 7, ward: 7, wardRealm: 1 }).wardTarget, 7);
+  assert.equal(resistTargets({ kind: "archetype", symRealm: 1, symRow: 4, realm: 2, row: 7, ward: 7, wardRealm: 1 }).wardTarget, null);
+  assert.equal(resistTargets({ kind: "actor", table: t, gap: noGap(), realm: 1, row: 4, ward: null, wardRealm: null }).wardTarget, null);
+}
 
 console.log("talent-calc: all tests passed");

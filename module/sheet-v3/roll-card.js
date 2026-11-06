@@ -42,10 +42,14 @@ function askModifier(title) {
  * @param {boolean} [o.debuff]  불운 -1
  * @param {string}  [o.realm]   영역 키 A..F (카드 색/표시용)
  * @param {string}  [o.theme]   테마 이름
+ * @param {number}  [o.modifier] 보정값을 이미 정했을 때 (묻지 않고 바로 적용)
+ * @param {string}  [o.who]     카드 윗줄에 표시할 이름 (기본: 액터 이름)
  */
-export async function rollTalentCard(actor, { title, target, ask = false, secret = false, debuff = false, realm = "", theme = "rulebook" }) {
+export async function rollTalentCard(actor, { title, target, ask = false, secret = false, debuff = false, realm = "", theme = "rulebook", modifier = null, who = null }) {
   let add = 0;
-  if (ask) {
+  if (modifier !== null && modifier !== undefined) {
+    add = Number(modifier) || 0; // 호출한 쪽에서 이미 정한 보정값 (저항판정 등)
+  } else if (ask) {
     add = await askModifier(title);
     if (add === null) return null; // 취소
   }
@@ -68,7 +72,7 @@ export async function rollTalentCard(actor, { title, target, ask = false, secret
   const content = await renderTemplate("systems/magicalogia/templates/sheet-v3/roll-card.html", {
     theme,
     realmIdx: (realm !== "" && Number(realm) >= 0 && Number(realm) < 6) ? Number(realm) : "x",
-    actorName: actor?.name ?? "",
+    actorName: who ?? actor?.name ?? "",
     title,
     formula: roll.formula.replace(/\s+/g, ""),
     target,
