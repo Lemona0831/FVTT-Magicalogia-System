@@ -18,7 +18,7 @@
     <div class="mglg-st-checks">
       <label><input type="checkbox" class="mglg-st" data-k="victory" {{#if v.victory}}checked{{/if}}> 승리 1</label>
       <label><input type="checkbox" class="mglg-st" data-k="survival" {{#if v.survival}}checked{{/if}}> 생존 1</label>
-      <label title="기관 소속이면 경력 신조와 기관 신조를 모두 충족해야 합니다. 이종족은 경력 신조 대신 종족 신조 중 하나."><input type="checkbox" class="mglg-st" data-k="creed" {{#if v.creed}}checked{{/if}}> 신조 1</label>
+      <label title="경력(이단자) 신조 또는 종족 신조 중 하나를 충족하면 됩니다. 기관 소속이면 기관 신조도 함께 충족해야 합니다."><input type="checkbox" class="mglg-st" data-k="creed" {{#if v.creed}}checked{{/if}}> 신조 1</label>
       <label><input type="checkbox" class="mglg-st" data-k="roleplay" {{#if v.roleplay}}checked{{/if}}> 롤플레이 1</label>
     </div>
     <div class="mglg-sess-row"><span class="mglg-sess-who">심금 (받은 점수)</span><input type="number" min="0" class="mglg-st" data-k="heartstring" value="{{v.heartstring}}"></div>
