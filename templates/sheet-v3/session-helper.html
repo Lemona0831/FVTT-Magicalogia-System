@@ -30,7 +30,7 @@
   </div>
   {{/if}}
   {{#each hoGroups}}
-  <h3 class="mglg-ho-group">{{label}}</h3>
+  <h3 class="mglg-ho-group {{kind}}">{{label}}</h3>
   {{#each rows}}
   <section class="mglg-sess-box mglg-ho" data-id="{{id}}">
     <h3 class="mglg-ho-head" title="펼치기/접기">{{#if open}}▾{{else}}▸{{/if}} {{name}}{{#if hasSecret}} <span class="mglg-ho-lock">🔒</span>{{/if}}</h3>

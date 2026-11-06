@@ -224,16 +224,19 @@
 
     {{!-- ===================== 핸드아웃 탭 ===================== --}}
     <div class="tab" data-group="primary" data-tab="handout">
-      <section class="mglg-card">
-        <div class="mglg-card-head"><h2>핸드아웃</h2><span class="mglg-note">{{#if v3.isGM}}핸드아웃은 세션 도우미에서 만들고 공개합니다{{else}}GM이 나에게 공개한 핸드아웃만 보입니다{{/if}}</span><span class="mglg-grow"></span>
-          {{#if v3.isGM}}<button type="button" class="mglg-btn mglg-ho-open" title="세션 도우미의 핸드아웃 탭을 엽니다">핸드아웃 관리</button>{{/if}}</div>
-        {{#if v3.hoGroups.length}}
-        {{#each v3.hoGroups}}
-        <div class="mglg-ho-group">{{label}}</div>
+      <div class="mglg-ho-intro">
+        <span class="mglg-note">{{#if v3.isGM}}핸드아웃과 에너미 정보는 세션 도우미에서 만들고 공개합니다{{else}}GM이 나에게 공개한 핸드아웃·에너미 정보만 보입니다{{/if}}</span>
+        <span class="mglg-grow"></span>
+        {{#if v3.isGM}}<button type="button" class="mglg-btn mglg-ho-open" title="세션 도우미의 핸드아웃 탭을 엽니다">핸드아웃 관리</button>{{/if}}
+      </div>
+      {{#each v3.hoGroups}}
+      <section class="mglg-card mglg-hogrp {{kind}}">
+        <div class="mglg-card-head"><h2>{{label}}</h2><span class="mglg-note">{{rows.length}}건</span></div>
         <div class="mglg-ho3-list">
           {{#each rows}}
           <div class="mglg-ho3 {{#if on}}open{{/if}}">
             <button type="button" class="mglg-ho-pick {{#if on}}on{{/if}}" data-id="{{id}}" aria-expanded="{{on}}">
+              <span class="mglg-ho3-kind">{{../label}}</span>
               <span class="mglg-ho3-name">{{name}}</span>
               {{#if hasSecret}}<span class="mglg-ho3-tag" title="비밀이 있는 핸드아웃">🔒</span>{{/if}}
               <span class="mglg-ho3-caret">{{#if on}}▾{{else}}▸{{/if}}</span>
@@ -256,9 +259,10 @@
           </div>
           {{/each}}
         </div>
-        {{/each}}
-        {{else}}<p class="mglg-note">{{#if v3.isGM}}핸드아웃이 없습니다. '핸드아웃 관리'에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p>{{/if}}
       </section>
+      {{else}}
+      <section class="mglg-card"><p class="mglg-note">{{#if v3.isGM}}핸드아웃이 없습니다. '핸드아웃 관리'에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p></section>
+      {{/each}}
       {{#if v3.handouts.length}}
       <section class="mglg-card">
         <div class="mglg-card-head"><h2>예전 핸드아웃</h2><span class="mglg-note">이전 방식으로 만든 것 (새로 만들 수는 없습니다)</span></div>

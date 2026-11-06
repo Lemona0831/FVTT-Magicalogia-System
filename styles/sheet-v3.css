@@ -561,3 +561,16 @@
 .mglg-sess .mglg-ho3-body { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); }
 .mglg-ho-group { margin: 12px 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .04em; opacity: .85; }
 .mglg-ho3-list + .mglg-ho-group { margin-top: 16px; }
+
+/* 핸드아웃 / 에너미 구분 (시트): 카드마다 색 띠 + 이름 줄에 종류 표식. 핸드아웃 = 테마 강조색, 에너미 = 붉은색 */
+.mglg-ho-intro { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+.mglg-hogrp { --hoc: var(--acc, #8a5a2b); border-top: 5px solid var(--hoc); }
+.mglg-hogrp.enemy { --hoc: #b3362f; }
+.mglg-hogrp .mglg-card-head h2 { color: var(--hoc); }
+.mglg-hogrp .mglg-ho3-list .mglg-ho-pick { border-left: 6px solid var(--hoc); }
+.mglg-hogrp .mglg-ho3-list .mglg-ho-pick.on { background: var(--hoc) !important; }
+.mglg-hogrp .mglg-ho3-list .mglg-ho3-body { border-color: var(--hoc); }
+.mglg-hogrp .mglg-ho3-col.sec { border-left-color: var(--hoc); }
+.mglg-ho3-kind { flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 999px; background: var(--hoc); color: #fff; }
+.mglg-hogrp .mglg-ho-pick.on .mglg-ho3-kind { background: rgba(255,255,255,.25); }
+.mglg-ho-group.enemy { color: #b3362f; }
