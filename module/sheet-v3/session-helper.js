@@ -161,7 +161,6 @@ let _win = null;
 export function openSessionHelper() {
   if (!_win) _win = new SessionHelper();
   _win.render(true);
-  _win.bringToTop?.();
   return _win;
 }
 
