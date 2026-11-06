@@ -4,6 +4,8 @@
  *  심금 — 플레이어들이 고른 표 수(기본 1, GM 이 임의로 줄 수도 있어 숫자로 입력)
  *  사명 — 표적 격파 3점, 큰 희생을 치렀으면 2점, 도입 '앵커를 지킨다'를 골랐다면 그 앵커의 【운명】 수치
  *  의무(소원 달성 +1 / 미달성 −1), 상혼 극복 +1, 소원 포기 +1, 도입 타입 금서 회수 +1, 기관 특기 등 기타 수정치
+ *  신조: 기관 소속이면 경력 신조 + 기관 신조를 모두 충족해야 1점 (기본 p.43). 이종족은 경력 신조 대신 종족 신조 중 하나 (황혼선서 p.138).
+ *  황혼선서 이종족: 악마 '사악한 생물'을 쓰면 −1, 〈이름 없는 단장〉(엽귀 등) 수장 1권당 +1.
  */
 const num = (x) => Number.parseInt(x, 10) || 0;
 
@@ -22,7 +24,7 @@ export function missionPoints(v) {
 export function calcMerit(v) {
   return (v.victory ? 1 : 0) + (v.survival ? 1 : 0) + (v.creed ? 1 : 0) + (v.roleplay ? 1 : 0)
     + Math.max(0, num(v.heartstring)) + missionPoints(v)
-    + num(v.duty) + (v.scar ? 1 : 0) + (v.giveup ? 1 : 0) + (v.book ? 1 : 0) + num(v.other);
+    + num(v.duty) + (v.scar ? 1 : 0) + (v.giveup ? 1 : 0) + (v.book ? 1 : 0) + Math.max(0, num(v.nameless)) - (v.devil ? 1 : 0) + num(v.other);
 }
 
 /** 시트의 '공적점 획득 조건' 체크를 초깃값으로 */
@@ -32,7 +34,7 @@ export function prefill(actor) {
   return {
     victory: f("victory"), survival: f("survival"), creed: f("creed"), roleplay: f("roleplay"),
     heartstring: f("heartstring") ? 1 : 0, mission: m, anchorFate: 0, duty: 0,
-    scar: false, giveup: false, book: false, other: 0
+    scar: false, giveup: false, book: false, nameless: 0, devil: false, other: 0
   };
 }
 
@@ -44,6 +46,8 @@ export function breakdown(v) {
   if (missionPoints(v)) out.push(`사명 ${missionPoints(v)}`);
   if (num(v.duty)) out.push(`의무 ${num(v.duty) > 0 ? "+" : ""}${num(v.duty)}`);
   if (v.scar) out.push("상흔 극복 1"); if (v.giveup) out.push("소원 포기 1"); if (v.book) out.push("금서 회수 1");
+  if (num(v.nameless) > 0) out.push(`이름 없는 단장 수장 ${num(v.nameless)}`);
+  if (v.devil) out.push("악마의 사악한 생물 −1");
   if (num(v.other)) out.push(`기타 ${num(v.other) > 0 ? "+" : ""}${num(v.other)}`);
   return out.join(" · ");
 }

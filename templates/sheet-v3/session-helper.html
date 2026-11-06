@@ -14,10 +14,11 @@
   {{#each settle}}
   <section class="mglg-sess-box mglg-st-card" data-id="{{id}}">
     <h3>{{name}} <span class="mglg-st-exp">현재 공적점 {{exp}}</span></h3>
+    {{#if note}}<p class="mglg-sess-hint">{{note}}</p>{{/if}}
     <div class="mglg-st-checks">
       <label><input type="checkbox" class="mglg-st" data-k="victory" {{#if v.victory}}checked{{/if}}> 승리 1</label>
       <label><input type="checkbox" class="mglg-st" data-k="survival" {{#if v.survival}}checked{{/if}}> 생존 1</label>
-      <label><input type="checkbox" class="mglg-st" data-k="creed" {{#if v.creed}}checked{{/if}}> 신조 1</label>
+      <label title="기관 소속이면 경력 신조와 기관 신조를 모두 충족해야 합니다. 이종족은 경력 신조 대신 종족 신조 중 하나."><input type="checkbox" class="mglg-st" data-k="creed" {{#if v.creed}}checked{{/if}}> 신조 1</label>
       <label><input type="checkbox" class="mglg-st" data-k="roleplay" {{#if v.roleplay}}checked{{/if}}> 롤플레이 1</label>
     </div>
     <div class="mglg-sess-row"><span class="mglg-sess-who">심금 (받은 점수)</span><input type="number" min="0" class="mglg-st" data-k="heartstring" value="{{v.heartstring}}"></div>
@@ -44,8 +45,10 @@
       <label><input type="checkbox" class="mglg-st" data-k="scar" {{#if v.scar}}checked{{/if}}> 상흔 극복 +1</label>
       <label><input type="checkbox" class="mglg-st" data-k="giveup" {{#if v.giveup}}checked{{/if}}> 소원 포기 +1</label>
       <label><input type="checkbox" class="mglg-st" data-k="book" {{#if v.book}}checked{{/if}}> 금서 회수 +1</label>
+      <label title="이종족(악마): 코스트 없이 마법을 쓴 세션"><input type="checkbox" class="mglg-st" data-k="devil" {{#if v.devil}}checked{{/if}}> 악마 사악한 생물 −1</label>
     </div>
-    <div class="mglg-sess-row"><span class="mglg-sess-who">기타 수정치</span><input type="number" class="mglg-st" data-k="other" value="{{v.other}}" title="기관 특기 등"></div>
+    <div class="mglg-sess-row"><span class="mglg-sess-who">이름 없는 단장 수장</span><input type="number" min="0" class="mglg-st" data-k="nameless" value="{{v.nameless}}" title="한 권마다 +1"></div>
+    <div class="mglg-sess-row"><span class="mglg-sess-who">기타 수정치</span><input type="number" class="mglg-st" data-k="other" value="{{v.other}}" title="기관 특기·시나리오 전용 조건표·리포트 평가 등"></div>
     <div class="mglg-sess-row mglg-st-sum"><b>이번 획득 <span class="mglg-st-total">{{total}}</span>점</b><button type="button" class="mglg-st-apply on">공적점에 더하기</button></div>
   </section>
   {{else}}<p class="mglg-sess-empty">정산할 플레이어 캐릭터가 없습니다 (플레이어가 소유자인 캐릭터만 나옵니다).</p>{{/each}}

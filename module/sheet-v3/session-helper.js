@@ -83,6 +83,7 @@ export class SessionHelper extends Application {
     return settleActors().map((a) => {
       const v = this._settleState(a), d = Number(v.duty) || 0;
       return {
+        note: [a.getFlag("magicalogia", "sheetV3.agencyNote") && `기관: ${a.getFlag("magicalogia", "sheetV3.agencyNote")}`, a.getFlag("magicalogia", "sheetV3.race") && `종족: ${a.getFlag("magicalogia", "sheetV3.race")}`].filter(Boolean).join(" · "),
         id: a.id, name: a.name, exp: a.system.details?.exp || 0, v, total: calcMerit(v),
         anchorMode: v.mission === "anchor",
         missionOpts: Object.entries(MISSION).map(([value, label]) => ({ value, label, sel: v.mission === value })),
