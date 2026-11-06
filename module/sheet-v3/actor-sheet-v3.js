@@ -1,3 +1,4 @@
+import { rollTalentCard } from "./roll-card.js";
 import { computeTargets, realmDebuff, gapsForCuriosity, stripRealmNumber, REALMS, ROWS } from "./talent-calc.js";
 
 const REALM_KEYS = ["A", "B", "C", "D", "E", "F"];
@@ -217,21 +218,21 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
   }
 
   /* -------------------------------------------- */
-  /* 판정: 기존 Actor#rollTalent 를 재사용 (카드 교체는 다음 단계). Ctrl=보정 입력, Alt=비밀 굴림 */
+  /* 판정: v3 채팅 카드 (roll-card.js). Ctrl=보정 입력, Alt=비밀 굴림 */
 
   async _onRollCell(ev) {
     if (ev.target.closest(".mglg-acquire")) return;
     ev.preventDefault();
     const d = ev.currentTarget.dataset;
-    const add = ev.ctrlKey || game.settings.get("magicalogia", "rollAddon");
-    return this.actor.rollTalent(d.title, Number(d.target), add, ev.altKey, d.debuff === "true");
+    const ask = ev.ctrlKey || game.settings.get("magicalogia", "rollAddon");
+    return rollTalentCard(this.actor, { title: d.title, target: Number(d.target), ask, secret: ev.altKey, debuff: d.debuff === "true", realm: d.realm ?? "", theme: resolveTheme() });
   }
 
   async _onRollSpirit(ev) {
     ev.preventDefault();
     const sp = this.actor.system.talent?.spirit_talent ?? {};
-    const add = ev.ctrlKey || game.settings.get("magicalogia", "rollAddon");
-    return this.actor.rollTalent(sp.name || game.i18n.localize("MAGICALOGIA.SpiritTalent"), sp.misfortune ? 12 : 6, add, ev.altKey, false);
+    const ask = ev.ctrlKey || game.settings.get("magicalogia", "rollAddon");
+    return rollTalentCard(this.actor, { title: sp.name || game.i18n.localize("MAGICALOGIA.SpiritTalent"), target: sp.misfortune ? 12 : 6, ask, secret: ev.altKey, theme: resolveTheme() });
   }
 
   async _onToggleMisfortune(ev) {

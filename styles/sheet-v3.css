@@ -266,3 +266,28 @@
   .mglg-sheet .mglg-hero, .mglg-sheet .mglg-two, .mglg-sheet .mglg-grid2, .mglg-sheet .mglg-grid3 { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .mglg-sheet * { transition: none !important; animation: none !important; } }
+
+/* ---------- 채팅 카드 (v3 판정) : 카드 안에서만 쓰는 작은 팔레트 ---------- */
+.mglg-card { --c-bg:#F5F2EA; --c-ink:#161514; --c-sub:#55504A; --c-line:#161514; --c-head:#161514; --c-head-ink:#fff; --c-ok:#0f6f0f; --c-ng:#862020; --c-doublet:#4131c7; --c-radius:0;
+  font-family: "Gothic A1", sans-serif; color: var(--c-ink); background: var(--c-bg); border: 1.5px solid var(--c-line); border-radius: var(--c-radius); overflow: hidden; margin: 2px 0; }
+.mglg-card.theme-academy { --c-bg:#EEF3F8; --c-ink:#0F1A2A; --c-sub:#4A5B70; --c-line:#0F1A2A; --c-head:#0F1A2A; --c-ok:#0369A1; --c-ng:#9B1C1C; }
+.mglg-card.theme-summer { --c-bg:#FFFDF5; --c-ink:#12315C; --c-sub:#4A6384; --c-line:#12315C; --c-head:#1E6FD9; --c-ok:#0b7a43; --c-ng:#c0392b; --c-radius:10px; }
+.mglg-card.theme-urban { --c-bg:#14121F; --c-ink:#EDEBFF; --c-sub:#A39FC8; --c-line:#7B6CFF; --c-head:#2A2450; --c-ok:#5CE1A6; --c-ng:#FF6B8A; --c-doublet:#9FA8FF; }
+.mglg-card-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:5px 10px; background: var(--c-head); color: var(--c-head-ink); }
+.mglg-card-title { font-weight:800; font-size:1.05em; }
+.mglg-card-target { font-size:.85em; opacity:.9; }
+.mglg-card-target b { font-size:1.15em; }
+.mglg-card-body { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; }
+.mglg-card-dice { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.mglg-die { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:1.5px solid var(--c-line); border-radius: calc(var(--c-radius) / 2.5); font-weight:800; font-size:1.1em; background: transparent; }
+.mglg-mod { font-size:.8em; color: var(--c-sub); }
+.mglg-eq { color: var(--c-sub); }
+.mglg-total { font-size:1.7em; font-weight:800; line-height:1; }
+.mglg-card-result { font-weight:800; font-size:1.2em; white-space:nowrap; }
+.mglg-card.out-success .mglg-card-result, .mglg-card.out-special .mglg-card-result { color: var(--c-ok); }
+.mglg-card.out-fail .mglg-card-result, .mglg-card.out-fumble .mglg-card-result { color: var(--c-ng); }
+.mglg-card.out-special .mglg-card-head, .mglg-card.out-fumble .mglg-card-head { box-shadow: inset 0 -3px 0 currentColor; }
+.mglg-card.out-special .mglg-total { color: var(--c-ok); }
+.mglg-card.out-fumble .mglg-total { color: var(--c-ng); }
+.mglg-card-doublet { padding:3px 10px; font-size:.85em; font-weight:700; color: var(--c-doublet); border-top:1px dashed var(--c-line); }
+.mglg-card-foot { padding:2px 10px 4px; font-size:.72em; color: var(--c-sub); text-align:right; }
