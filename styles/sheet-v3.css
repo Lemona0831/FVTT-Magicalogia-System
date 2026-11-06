@@ -304,3 +304,24 @@
 .mglg-card-target { margin-top:7px; font-size:10px; font-weight:700; opacity:.75; }
 .mglg-card-target b { font-weight:900; }
 .mglg-card-doublet { margin-top:6px; padding-top:5px; border-top:2px dotted currentColor; font-size:11px; font-weight:800; }
+
+/* ---------- 스티커 붙는 연출 ---------- */
+.mglg-card.mglg-pop { animation:mglg-stick .55s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes mglg-stick {
+  0%   { transform:translateY(-34px) rotate(-7deg) scale(1.18); opacity:0; box-shadow:14px 16px 0 rgba(42,35,82,.25); }
+  45%  { opacity:1; }
+  65%  { transform:translateY(2px) rotate(1deg) scale(.97); box-shadow:2px 2px 0 var(--ink); }
+  100% { transform:none; box-shadow:4px 4px 0 var(--ink); }
+}
+.mglg-card.mglg-pop .mglg-die { animation:mglg-pip-in .35s cubic-bezier(.3,1.6,.5,1) both; }
+.mglg-card.mglg-pop .mglg-die:nth-child(1) { animation-delay:.30s; }
+.mglg-card.mglg-pop .mglg-die:nth-child(2) { animation-delay:.38s; }
+.mglg-card.mglg-pop .mglg-total { animation:mglg-pip-in .4s cubic-bezier(.3,1.8,.5,1) .5s both; display:inline-block; }
+.mglg-card.mglg-pop .mglg-card-result { animation:mglg-stamp .35s cubic-bezier(.3,1.6,.5,1) .7s both; }
+@keyframes mglg-pip-in { 0% { transform:scale(0) rotate(-20deg); opacity:0; } 100% { transform:none; opacity:1; } }
+@keyframes mglg-stamp { 0% { transform:scale(2) rotate(-12deg); opacity:0; } 100% { transform:rotate(-2deg); opacity:1; } }
+.mglg-card.mglg-pop.out-special::before { animation:mglg-star 1s ease-out .8s both; }
+@keyframes mglg-star { 0% { transform:scale(0) rotate(0); } 40% { transform:scale(2.2) rotate(180deg); } 100% { transform:scale(1) rotate(360deg); } }
+.mglg-card.mglg-pop.out-fumble { animation:mglg-stick .55s cubic-bezier(.2,.9,.3,1) both, mglg-shake .4s ease-in-out .9s; }
+@keyframes mglg-shake { 0%,100% { translate:0 } 20% { translate:-5px } 40% { translate:5px } 60% { translate:-3px } 80% { translate:3px } }
+@media (prefers-reduced-motion: reduce) { .mglg-card, .mglg-card * { animation:none !important; } }

@@ -25,3 +25,20 @@ Hooks.once("init", () => {
     onChange: () => Object.values(ui.windows).filter((w) => w instanceof MagicalogiaActorSheetV3).forEach((w) => w.render())
   });
 });
+
+// 새로 만들어진 판정 카드만 "스티커 붙는" 연출을 재생한다.
+// Dice So Nice 가 메시지를 숨겨 두는 동안에는 재생하지 않고, 화면에 보이는 순간 시작한다.
+Hooks.on("renderChatMessage", (message, html) => {
+  if (!message.getFlag("magicalogia", "v3Roll")) return;
+  if (Date.now() - (message.timestamp ?? 0) > 20000) return; // 오래된 메시지는 연출 없음
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  const card = html[0]?.querySelector?.(".mglg-card") ?? html.find?.(".mglg-card")?.[0];
+  if (!card || card.dataset.mglgPlayed) return;
+  card.dataset.mglgPlayed = "1";
+  const io = new IntersectionObserver((entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    io.disconnect();
+    card.classList.add("mglg-pop");
+  });
+  io.observe(card);
+});
