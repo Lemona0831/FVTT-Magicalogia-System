@@ -119,4 +119,4 @@ Hooks.on("chatMessage", (log, message) => {
   return false;
 });
 
-for (const h of ["canvasReady", "createDrawing", "deleteDrawing", "updateDrawing", "updateScene"]) Hooks.on(h, () => refreshSessionHelper());
+for (const h of ["canvasReady", "createDrawing", "deleteDrawing", "updateDrawing", "updateScene", "createJournalEntry", "updateJournalEntry", "deleteJournalEntry"]) Hooks.on(h, () => refreshSessionHelper());

@@ -12,6 +12,7 @@ import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice
 import { loadBuiltin, tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
 import { resolveTheme } from "./actor-sheet-v3.js";
+import { visibleHandouts, journalHTML, info as hoInfo, secretOf, isShown, shownToAll, createHandout, setShown, setShownAll, removeHandout } from "./handout.js";
 import { MISSION, calcMerit, prefill, breakdown, settleActors, applyMerit } from "./settle.js";
 
 export const SCENE_TYPES = [
@@ -93,6 +94,23 @@ export class SessionHelper extends Application {
     });
   }
 
+  async _handoutRows() {
+    const players = game.users.filter((u) => !u.isGM);
+    return Promise.all(visibleHandouts().map(async (j) => {
+      const f = hoInfo(j), s = secretOf(j), gm = game.user.isGM;
+      const open = this._hoOpen?.has(j.id) ?? !gm;
+      return {
+        id: j.id, name: j.name, open, talent: f.talent, hasSecret: !!f.secretId,
+        html: open ? await journalHTML(j) : "",
+        secretShown: !!s && open, secretHtml: s && open ? await journalHTML(s) : "",
+        secretLocked: !!f.secretId && !s,
+        pubAll: shownToAll(j), secAll: shownToAll(s),
+        pubUsers: players.map((u) => ({ id: u.id, name: u.name, on: isShown(j, u) })),
+        secUsers: s ? players.map((u) => ({ id: u.id, name: u.name, on: isShown(s, u) })) : []
+      };
+    }));
+  }
+
   async getData() {
     const st = getSessionState();
     const book = await lawBook();
@@ -103,8 +121,9 @@ export class SessionHelper extends Application {
     if ((this._tab === "gm" || this._tab === "settle") && !game.user.isGM) this._tab = "status";
     const tab = this._tab ?? "status";
     return {
-      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", arch: tab === "arch", gm: tab === "gm", settle: tab === "settle" },
+      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", arch: tab === "arch", gm: tab === "gm", settle: tab === "settle", handout: tab === "handout" },
       settle: tab === "settle" ? this._settleRows() : [],
+      handouts: tab === "handout" ? await this._handoutRows() : [],
       skills: tab === "arch" ? Array.from({ length: 6 }, (_, r) => ({ realm: realmName(r), items: Array.from({ length: 11 }, (_, row) => ({ no: row + 2, name: talentName(r, row) })) })) : [],
       types: tab === "arch" ? await Promise.all(TYPES.map(async (t) => ({ name: t.name, base: effectsToString(parseEffects(await baseEffects(t.name))) }))) : [],
       zones: placeTargets(), myRole: myRole(), firstA: getFirst() === "A", firstB: getFirst() === "B", firstSide: getFirst(), secondSide: getFirst() === "A" ? "B" : "A", firstName: SIDE[getFirst()], secondName: SIDE[getFirst() === "A" ? "B" : "A"], delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
@@ -192,6 +211,45 @@ export class SessionHelper extends Application {
       for (const a of settleActors()) await applyOne(a);
       this.render();
     }));
+    html.find(".mglg-ho-new").on("click", gmOnly(async () => {
+      const r = await Dialog.prompt({
+        title: "새 핸드아웃", rejectClose: false, label: "만들기",
+        content: `<form>
+          <div class="form-group"><label>제목</label><input type="text" name="t" placeholder="예: 하루카의 일기장"></div>
+          <div class="form-group"><label>공개 정보</label><textarea name="p" rows="4" style="width:100%"></textarea></div>
+          <div class="form-group"><label>조사 특기</label><input type="text" name="k" placeholder="예: 기억 / 비밀을 알아내는 특기"></div>
+          <div class="form-group"><label>비밀</label><textarea name="s" rows="4" style="width:100%" placeholder="비워 두면 비밀 없는 핸드아웃"></textarea></div>
+          <p class="notes">빈 줄로 문단을 나눕니다. 이미지·서식은 만든 뒤 '편집'에서 넣을 수 있습니다. 공개하기 전에는 GM 만 볼 수 있고, 비밀은 조사에 성공한 사람에게만 따로 공개합니다.</p></form>`,
+        callback: (h) => ({ title: String(h.find("[name=t]").val() ?? "").trim(), pub: h.find("[name=p]").val(), talent: h.find("[name=k]").val(), secret: h.find("[name=s]").val() })
+      });
+      if (!r) return;
+      await createHandout(r); this.render();
+    }));
+    const hoOf = (el) => game.journal.get($(el).closest(".mglg-ho").data("id"));
+    html.find(".mglg-ho-toggle").on("click", gmOnly(async (ev) => {
+      const el = ev.currentTarget, j = hoOf(el), u = game.users.get(el.dataset.user); if (!j || !u) return;
+      const target = el.dataset.kind === "secret" ? secretOf(j) : j;
+      await setShown(j, el.dataset.kind, u.id, !isShown(target, u));
+    }));
+    html.find(".mglg-ho-all").on("click", gmOnly(async (ev) => {
+      const el = ev.currentTarget, j = hoOf(el); if (!j) return;
+      const target = el.dataset.kind === "secret" ? secretOf(j) : j;
+      await setShownAll(j, el.dataset.kind, !shownToAll(target));
+    }));
+    html.find(".mglg-ho-edit").on("click", gmOnly((ev) => {
+      const j = hoOf(ev.currentTarget); if (!j) return;
+      (ev.currentTarget.dataset.kind === "secret" ? secretOf(j) : j)?.sheet.render(true);
+    }));
+    html.find(".mglg-ho-del").on("click", gmOnly(async (ev) => {
+      const j = hoOf(ev.currentTarget); if (!j) return;
+      if (await Dialog.confirm({ title: "핸드아웃 삭제", content: `<p>'${escapeHTML(j.name)}' 핸드아웃(공개 정보와 비밀 저널)을 삭제합니다. 되돌릴 수 없습니다.</p>` })) { await removeHandout(j); }
+    }));
+    html.find(".mglg-ho-head").on("click", (ev) => {
+      const id = $(ev.currentTarget).closest(".mglg-ho").data("id");
+      this._hoOpen ??= new Set(game.user.isGM ? [] : visibleHandouts().map((j) => j.id));
+      this._hoOpen.has(id) ? this._hoOpen.delete(id) : this._hoOpen.add(id);
+      this.render();
+    });
     html.find(".mglg-sess-tab").on("click", (ev) => { this._tab = ev.currentTarget.dataset.tab; this.render(); });
     const say = (head, body) => ChatMessage.create({
       content: `<div class="mglg-sess-chat"><b>${head}</b> · ${escapeHTML(body)}</div>`, speaker: { alias: "세션" }

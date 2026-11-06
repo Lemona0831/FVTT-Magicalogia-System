@@ -529,3 +529,14 @@
 .mglg-st-card select { min-width: 0; flex: 1 1 auto; }
 .mglg-st-sum { justify-content: space-between; margin-top: 6px; }
 .mglg-st-total { font-size: 18px; color: var(--acc); }
+
+/* 핸드아웃 탭 */
+.mglg-sess-tabs { flex-wrap: wrap; }
+.mglg-sess-tabs .mglg-sess-tab { min-width: 3.6em; }
+.mglg-ho-head { cursor: pointer; user-select: none; }
+.mglg-ho-label { font-size: 12px; font-weight: 700; opacity: .75; margin: 8px 0 2px; }
+.mglg-ho-body { margin: 2px 0 6px; line-height: 1.55; font-size: 14px; }
+.mglg-ho-body p { margin: 0 0 .5em; }
+.mglg-ho-secret { border-left: 3px solid var(--acc); padding-left: 8px; }
+.mglg-ho-targets { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+.mglg-ho-targets .mini.on { background: var(--acc) !important; color: #fff !important; }
