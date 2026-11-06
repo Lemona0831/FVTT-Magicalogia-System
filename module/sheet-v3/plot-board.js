@@ -1,7 +1,7 @@
 /**
  * 플롯 보드: 맵 위 4구역(A/B 대표·입회) + 주사위 타일.
  *  - 구역 = 장면의 그리기(Drawing) 사각형. 플래그 magicalogia.zone 에 구역 키를 저장한다. (GM 이 버튼을 눌렀을 때만 만든다)
- *  - 주사위 = 장면의 타일(Tile). 플래그 magicalogia.die = { zone, kind, owner, revealed, face? }.
+ *  - 주사위 = 장면의 토큰(Token, "플롯 주사위" 액터 사용 — 플레이어도 끌 수 있게). 플래그 magicalogia.die = { zone, kind, owner, revealed, face? }.
  *    공개 전에는 눈을 타일 데이터에 쓰지 않는다 → GM 브라우저(localStorage)에만 보관해 다른 플레이어에게 새지 않게 한다.
  *  - 플레이어는 타일을 직접 만들 수 없으므로 소켓으로 GM 에게 요청한다 (GM 이 접속해 있어야 한다).
  *  - 비교 계산은 plot-logic.js (룰북 기준). Roll20 match_dice 의 4구역 구성은 따르되, 공격/방어를 나눠서 계산한다.
@@ -27,6 +27,21 @@ const writeSecrets = (o) => { try { localStorage.setItem(SECRET_KEY, JSON.string
 
 const scene = () => canvas?.scene ?? game.scenes?.viewed ?? null;
 const dieOf = (t) => t.getFlag("magicalogia", "die");
+/** 토큰의 width/height 는 칸 단위 → 중심 좌표(px) */
+const center = (t) => { const g = t.parent?.grid?.size || 100; return { cx: t.x + (t.width * g) / 2, cy: t.y + (t.height * g) / 2 }; };
+
+/** 플롯 주사위 토큰이 쓰는 액터. 모든 플레이어가 소유자라서 누구나 주사위를 끌 수 있다. (GM 이 처음 쓸 때 한 번 만든다) */
+async function ensureDiceActor() {
+  let a = game.actors.find((x) => x.getFlag("magicalogia", "plotDiceActor"));
+  if (a) return a;
+  a = await Actor.create({
+    name: "플롯 주사위", type: "character", img: KIND_IMG.back,
+    ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
+    flags: { magicalogia: { plotDiceActor: true } }
+  });
+  ui.notifications.info("'플롯 주사위' 액터를 만들었습니다 (플레이어가 주사위 토큰을 끌 수 있게 하는 용도). 지우지 마세요.");
+  return a;
+}
 
 export function getZones(sc = scene()) {
   // 같은 이름의 구역을 여러 개 둘 수 있다 (입회인마다 칸을 따로 까는 식). 키 → 드로잉 배열
@@ -96,7 +111,7 @@ export function addDie({ zone, kind, face = null }) {
 function freeSlot(sc, zd, excludeId = null) {
   const pad = 8, size = DIE_SIZE, r = zoneRect(zd);
   const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));
-  const others = sc.tiles.filter((t) => dieOf(t) && t.id !== excludeId);
+  const others = sc.tokens.filter((t) => dieOf(t) && t.id !== excludeId);
   for (let idx = 0; idx < 200; idx++) {
     const x = r.x + pad + (idx % cols) * (size + pad);
     const y = r.y + 40 + Math.floor(idx / cols) * (size + pad);
@@ -112,15 +127,18 @@ async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   const g = sc.grid.size || 100;
   const pad = 8;
   // 구역이 여러 개면 사람마다 자기 칸을 쓴다: 이미 내 주사위가 있는 칸 → 없으면 비어 있는 칸 → 없으면 가장 적은 칸
-  const diceIn = (d) => { const rr = zoneRect(d); return sc.tiles.filter((t) => dieOf(t) && inside(rr, t.x + t.width / 2, t.y + t.height / 2)); };
+  const diceIn = (d) => { const rr = zoneRect(d); return sc.tokens.filter((t) => dieOf(t) && inside(rr, center(t).cx, center(t).cy)); };
   const countIn = (d) => diceIn(d).length;
   const ordered = [...areas].sort((a, b) => a.y - b.y || a.x - b.x);
   const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
   const zd = mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
   const size = DIE_SIZE; // 이미지 원본 크기(70px) 그대로
   const { x, y } = freeSlot(sc, zd);
-  const [tile] = await sc.createEmbeddedDocuments("Tile", [{
-    x, y, width: size, height: size, texture: { src: KIND_IMG.back },
+  const actor = await ensureDiceActor();
+  const g2 = sc.grid.size || 100;
+  const [tile] = await sc.createEmbeddedDocuments("Token", [{
+    name: "플롯 주사위", actorId: actor.id, actorLink: false, x, y, width: size / g2, height: size / g2,
+    texture: { src: KIND_IMG.back }, displayName: 0, disposition: 0, lockRotation: true, sight: { enabled: false },
     flags: { magicalogia: { die: { zone, kind, owner, revealed: false } } }
   }]);
   if (kind === "face" && tile) { const s = readSecrets(); s[tile.id] = Number(face); writeSecrets(s); }
@@ -137,9 +155,12 @@ export function clearMine() {
 export async function clearDice(owner = null, sceneId = null) {
   if (!game.user.isGM) return;
   const sc = sceneId ? game.scenes.get(sceneId) : scene(); if (!sc) return;
-  const ids = sc.tiles.filter((t) => { const d = dieOf(t); return d && (!owner || d.owner === owner); }).map((t) => t.id);
-  if (ids.length) await sc.deleteEmbeddedDocuments("Tile", ids);
+  const ids = sc.tokens.filter((t) => { const d = dieOf(t); return d && (!owner || d.owner === owner); }).map((t) => t.id);
+  if (ids.length) await sc.deleteEmbeddedDocuments("Token", ids);
   const s = readSecrets(); ids.forEach((id) => delete s[id]); writeSecrets(s);
+  // 예전 버전에서 만든 타일형 주사위도 같이 치운다
+  const old = sc.tiles.filter((t) => dieOf(t)).map((t) => t.id);
+  if (old.length && !owner) await sc.deleteEmbeddedDocuments("Tile", old);
 }
 
 /* ---------- 공개 / 비교 ---------- */
@@ -148,7 +169,7 @@ export async function revealAll() {
   const sc = scene(); if (!sc) return;
   const secrets = readSecrets();
   const updates = [];
-  for (const t of sc.tiles) {
+  for (const t of sc.tokens) {
     const d = dieOf(t);
     if (!d || d.revealed) continue;
     let face = d.face ?? null, src;
@@ -161,7 +182,7 @@ export async function revealAll() {
     updates.push({ _id: t.id, "texture.src": src, "flags.magicalogia.die": { ...d, revealed: true, face } });
   }
   if (!updates.length) return ui.notifications.info("공개할 주사위가 없습니다.");
-  await sc.updateEmbeddedDocuments("Tile", updates);
+  await sc.updateEmbeddedDocuments("Token", updates);
   ChatMessage.create({ content: `<div class="mglg-sess-chat"><b>플롯 공개</b> · 주사위 ${updates.length}개</div>`, speaker: { alias: "세션" } });
 }
 
@@ -170,9 +191,9 @@ function collect(sc) {
   const zones = getZones(sc);
   const rects = Object.fromEntries(Object.entries(zones).map(([k, ds]) => [k, ds.map(zoneRect)]));
   const out = Object.fromEntries(ZONES.map((z) => [z.key, { faces: [], tiles: [], focus: false, focusTiles: [] }]));
-  for (const t of sc.tiles) {
+  for (const t of sc.tokens) {
     const d = dieOf(t); if (!d) continue;
-    const cx = t.x + t.width / 2, cy = t.y + t.height / 2;
+    const { cx, cy } = center(t);
     const key = Object.keys(rects).find((k) => rects[k].some((r) => inside(r, cx, cy))) ?? d.zone;
     if (!out[key]) continue;
     if (d.kind === "focus") { out[key].focus = true; out[key].focusTiles.push(t.id); }
@@ -185,7 +206,7 @@ export async function resolvePlot(attackerSide) {
   if (!game.user.isGM) return ui.notifications.warn("GM 만 비교할 수 있습니다.");
   const sc = scene(); if (!sc) return;
   if (!hasZones(sc)) return ui.notifications.warn("이 장면에 플롯 구역이 없습니다.");
-  if (sc.tiles.some((t) => dieOf(t) && !dieOf(t).revealed)) return ui.notifications.warn("공개되지 않은 주사위가 있습니다. 먼저 '공개'를 눌러 주세요.");
+  if (sc.tokens.some((t) => dieOf(t) && !dieOf(t).revealed)) return ui.notifications.warn("공개되지 않은 주사위가 있습니다. 먼저 '공개'를 눌러 주세요.");
   const A = attackerSide, D = attackerSide === "A" ? "B" : "A";
   const z = collect(sc);
   if (z[`${A}_delegate`].faces.some((f) => f == null) || z[`${D}_delegate`].faces.some((f) => f == null)) return ui.notifications.warn("눈을 알 수 없는 주사위가 있습니다.");
@@ -200,7 +221,7 @@ export async function resolvePlot(attackerSide) {
   const updates = [];
   const mark = (list, tiles) => list.forEach((x) => { if (x.broken && tiles[x.i]) updates.push({ _id: tiles[x.i], alpha: 0.3 }); });
   mark(res.attack, z[`${A}_delegate`].tiles); mark(res.defDelegate, z[`${D}_delegate`].tiles); mark(res.defObserver, z[`${D}_observer`].tiles);
-  if (updates.length) await sc.updateEmbeddedDocuments("Tile", updates);
+  if (updates.length) await sc.updateEmbeddedDocuments("Token", updates);
 
   const die = (x) => `<img src="${faceImg(x.face)}" style="width:34px;height:34px;${x.broken ? "opacity:.3" : ""}">`;
   const row = (label, list) => `<div style="margin:3px 0"><span style="display:inline-block;width:64px">${label}</span>${list.length ? list.map(die).join("") : "<i>없음</i>"}</div>`;
@@ -219,13 +240,13 @@ export async function resolvePlot(attackerSide) {
   ChatMessage.create({ content, speaker: { alias: "세션" } });
 }
 
-/* ---------- 끌어당기기: GM 이 주사위를 놓으면 가장 가까운 구역의 빈 칸으로 붙인다 ---------- */
-Hooks.on("updateTile", async (tile, change, options, userId) => {
-  if (!game.user.isGM || userId !== game.user.id || options?.mglgSnap) return;
+/* ---------- 끌어당기기: 누가 주사위를 놓든 (GM 화면에서) 가장 가까운 구역의 빈 칸으로 붙인다 ---------- */
+Hooks.on("updateToken", async (tile, change, options, userId) => {
+  if (game.users.activeGM?.id !== game.user.id || options?.mglgSnap) return; // 활성 GM 한 명만 처리 (플레이어가 끌어도 GM 화면에서 정렬)
   const d = dieOf(tile);
   if (!d || !("x" in change || "y" in change)) return;
   const sc = tile.parent; if (!sc) return;
-  const cx = tile.x + tile.width / 2, cy = tile.y + tile.height / 2;
+  const { cx, cy } = center(tile);
   let best = null;
   for (const [key, list] of Object.entries(getZones(sc))) {
     for (const zd of list) {
