@@ -166,7 +166,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
         })),
         ...byType("item").map((i) => ({ id: i.id, kind: "아이템", name: i.name, system: i.system, isItem: true, qty: num(i.system.quantity, 1) }))
       ],
-      hoRows: await sheetRows(),
+      ...(await (async () => { const r = await sheetRows(this._hoSel); return { hoList: r.list, hoCur: r.cur }; })()),
       handouts: byType("handout")
         .filter((i) => game.user.isGM || (i.system.visible instanceof Object && i.system.visible[game.user.id]))
         .map((i) => ({
@@ -215,6 +215,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
     html.find(".mglg-step").on("click", this._onStep.bind(this));
     html.find(".mglg-charge").on("click", this._onCharge.bind(this));
     html.find(".mglg-ho-open").on("click", () => game.magicalogia?.openSession?.("handout"));
+    html.find(".mglg-ho-pick").on("click", (ev) => { this._hoSel = ev.currentTarget.dataset.id; this.render(); });
     html.find(".mglg-slip").on("click", (ev) => {
       spawnSlips([{ actorId: this.actor.id, itemId: ev.currentTarget.dataset.itemId }]);
     });

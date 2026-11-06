@@ -540,3 +540,17 @@
 .mglg-ho-secret { border-left: 3px solid var(--acc); padding-left: 8px; }
 .mglg-ho-targets { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
 .mglg-ho-targets .mini.on { background: var(--acc) !important; color: #fff !important; }
+
+/* 시트 핸드아웃 탭: 목록 + 상세 */
+.mglg-ho2 { display: grid; grid-template-columns: minmax(150px, 30%) 1fr; gap: 12px; align-items: start; }
+.mglg-ho2-list { display: flex; flex-direction: column; gap: 4px; }
+.mglg-ho2-list .mglg-ho-pick { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; cursor: pointer; line-height: 1.3; }
+.mglg-ho2-list .mglg-ho-pick.on { background: var(--acc, #8a5a2b) !important; color: #fff !important; }
+.mglg-ho2-name { overflow-wrap: anywhere; }
+.mglg-ho2-view { min-width: 0; padding: 2px 4px; text-align: left; }
+.mglg-ho2-view .mglg-note { text-align: left; }
+.mglg-ho2-title { margin: 0 0 4px; }
+.mglg-ho2-view .mglg-ho-label { font-size: 12px; font-weight: 700; opacity: .75; margin: 10px 0 2px; }
+.mglg-ho2-view .mglg-hand-body { line-height: 1.65; font-size: 15px; }
+.mglg-ho2-view .mglg-ho-secret { border-left: 3px solid var(--acc, #8a5a2b); padding-left: 10px; }
+@media (max-width: 640px) { .mglg-ho2 { grid-template-columns: 1fr; } }
