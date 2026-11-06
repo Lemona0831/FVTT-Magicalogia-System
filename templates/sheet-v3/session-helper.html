@@ -4,8 +4,54 @@
     <button type="button" class="mglg-sess-tab {{#if tab.roll}}on{{/if}}" data-tab="roll">판정·표</button>
     <button type="button" class="mglg-sess-tab {{#if tab.plot}}on{{/if}}" data-tab="plot">플롯</button>
     <button type="button" class="mglg-sess-tab {{#if tab.arch}}on{{/if}}" data-tab="arch">원형</button>
+    {{#if isGM}}<button type="button" class="mglg-sess-tab gm {{#if tab.settle}}on{{/if}}" data-tab="settle">정산</button>{{/if}}
     {{#if isGM}}<button type="button" class="mglg-sess-tab gm {{#if tab.gm}}on{{/if}}" data-tab="gm">GM</button>{{/if}}
   </nav>
+
+  {{#if tab.settle}}
+  <div class="mglg-sess-gm">
+  <p class="mglg-sess-hint">세션 종료 시 공적점 정산입니다. 룰북 「공적점을 받을 수 있는 조건」 기준이며, 시트의 체크가 초깃값으로 들어옵니다. 값은 자유롭게 고칠 수 있고, '더하기'를 눌러야 캐릭터 시트의 공적점에 반영됩니다.</p>
+  {{#each settle}}
+  <section class="mglg-sess-box mglg-st-card" data-id="{{id}}">
+    <h3>{{name}} <span class="mglg-st-exp">현재 공적점 {{exp}}</span></h3>
+    <div class="mglg-st-checks">
+      <label><input type="checkbox" class="mglg-st" data-k="victory" {{#if v.victory}}checked{{/if}}> 승리 1</label>
+      <label><input type="checkbox" class="mglg-st" data-k="survival" {{#if v.survival}}checked{{/if}}> 생존 1</label>
+      <label><input type="checkbox" class="mglg-st" data-k="creed" {{#if v.creed}}checked{{/if}}> 신조 1</label>
+      <label><input type="checkbox" class="mglg-st" data-k="roleplay" {{#if v.roleplay}}checked{{/if}}> 롤플레이 1</label>
+    </div>
+    <div class="mglg-sess-row"><span class="mglg-sess-who">심금 (받은 점수)</span><input type="number" min="0" class="mglg-st" data-k="heartstring" value="{{v.heartstring}}"></div>
+    <div class="mglg-sess-row"><span class="mglg-sess-who">사명</span>
+      <select class="mglg-st" data-k="mission">{{#each missionOpts}}<option value="{{value}}" {{#if sel}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </div>
+    {{#if anchorMode}}
+    <div class="mglg-sess-row"><span class="mglg-sess-who">지킨 앵커</span>
+      <select class="mglg-st-anchor">
+        <option value="">직접 입력 →</option>
+        {{#each bonds}}<option value="{{fate}}">{{name}} · 운명 {{fate}}</option>{{/each}}
+      </select>
+      <input type="number" min="0" class="mglg-st" data-k="anchorFate" value="{{v.anchorFate}}" title="앵커의 운명 수치">
+    </div>
+    {{/if}}
+    <div class="mglg-sess-row"><span class="mglg-sess-who">의무 (소원)</span>
+      <select class="mglg-st" data-k="duty">
+        <option value="0" {{#if dutyNone}}selected{{/if}}>해당 없음</option>
+        <option value="1" {{#if dutyUp}}selected{{/if}}>소원 달성 +1</option>
+        <option value="-1" {{#if dutyDown}}selected{{/if}}>미달성 −1</option>
+      </select>
+    </div>
+    <div class="mglg-st-checks">
+      <label><input type="checkbox" class="mglg-st" data-k="scar" {{#if v.scar}}checked{{/if}}> 상흔 극복 +1</label>
+      <label><input type="checkbox" class="mglg-st" data-k="giveup" {{#if v.giveup}}checked{{/if}}> 소원 포기 +1</label>
+      <label><input type="checkbox" class="mglg-st" data-k="book" {{#if v.book}}checked{{/if}}> 금서 회수 +1</label>
+    </div>
+    <div class="mglg-sess-row"><span class="mglg-sess-who">기타 수정치</span><input type="number" class="mglg-st" data-k="other" value="{{v.other}}" title="기관 특기 등"></div>
+    <div class="mglg-sess-row mglg-st-sum"><b>이번 획득 <span class="mglg-st-total">{{total}}</span>점</b><button type="button" class="mglg-st-apply on">공적점에 더하기</button></div>
+  </section>
+  {{else}}<p class="mglg-sess-empty">정산할 플레이어 캐릭터가 없습니다 (플레이어가 소유자인 캐릭터만 나옵니다).</p>{{/each}}
+  {{#if settle.length}}<div class="mglg-sess-row"><button type="button" class="mglg-st-apply-all">모두 더하기</button></div>{{/if}}
+  </div>
+  {{/if}}
 
   {{#if tab.arch}}
   <section class="mglg-sess-box">

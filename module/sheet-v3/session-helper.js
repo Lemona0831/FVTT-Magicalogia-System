@@ -12,6 +12,7 @@ import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice
 import { loadBuiltin, tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
 import { resolveTheme } from "./actor-sheet-v3.js";
+import { MISSION, calcMerit, prefill, breakdown, settleActors, applyMerit } from "./settle.js";
 
 export const SCENE_TYPES = [
   { id: "drama", label: "드라마 장면" },
@@ -77,6 +78,20 @@ export class SessionHelper extends Application {
     });
   }
 
+  _settleState(a) { this._st ??= {}; return (this._st[a.id] ??= prefill(a)); }
+  _settleRows() {
+    return settleActors().map((a) => {
+      const v = this._settleState(a), d = Number(v.duty) || 0;
+      return {
+        id: a.id, name: a.name, exp: a.system.details?.exp || 0, v, total: calcMerit(v),
+        anchorMode: v.mission === "anchor",
+        missionOpts: Object.entries(MISSION).map(([value, label]) => ({ value, label, sel: v.mission === value })),
+        dutyNone: d === 0, dutyUp: d > 0, dutyDown: d < 0,
+        bonds: a.items.filter((i) => i.type === "bond").map((i) => ({ name: i.name, fate: Number(i.system.destiny) || 0 }))
+      };
+    });
+  }
+
   async getData() {
     const st = getSessionState();
     const book = await lawBook();
@@ -84,10 +99,11 @@ export class SessionHelper extends Application {
     const inUse = new Set(st.laws.map((l) => l.name));
     const actor = myActor();
     const ph = PHASES.find((p) => p.id === st.phase) ?? PHASES[0];
-    if (this._tab === "gm" && !game.user.isGM) this._tab = "status";
+    if ((this._tab === "gm" || this._tab === "settle") && !game.user.isGM) this._tab = "status";
     const tab = this._tab ?? "status";
     return {
-      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", arch: tab === "arch", gm: tab === "gm" },
+      tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", arch: tab === "arch", gm: tab === "gm", settle: tab === "settle" },
+      settle: tab === "settle" ? this._settleRows() : [],
       skills: tab === "arch" ? Array.from({ length: 6 }, (_, r) => ({ realm: realmName(r), items: Array.from({ length: 11 }, (_, row) => ({ no: row + 2, name: talentName(r, row) })) })) : [],
       types: tab === "arch" ? await Promise.all(TYPES.map(async (t) => ({ name: t.name, base: effectsToString(parseEffects(await baseEffects(t.name))) }))) : [],
       zones: placeTargets(), myRole: myRole(), firstA: getFirst() === "A", firstB: getFirst() === "B", firstSide: getFirst(), secondSide: getFirst() === "A" ? "B" : "A", firstName: SIDE[getFirst()], secondName: SIDE[getFirst() === "A" ? "B" : "A"], delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
@@ -149,6 +165,32 @@ export class SessionHelper extends Application {
     html.find(".mglg-plot-reveal").on("click", gmOnly(() => revealAll()));
     html.find(".mglg-plot-resolve").on("click", gmOnly((ev) => resolvePlot(ev.currentTarget.dataset.side)));
     html.find(".mglg-plot-clear").on("click", gmOnly(() => clearDice()));
+    const stCard = (el) => game.actors.get($(el).closest(".mglg-st-card").data("id"));
+    html.find(".mglg-st").on("change", gmOnly((ev) => {
+      const el = ev.currentTarget, a = stCard(el); if (!a) return;
+      const v = this._settleState(a);
+      v[el.dataset.k] = el.type === "checkbox" ? el.checked : (el.tagName === "SELECT" ? el.value : Number(el.value) || 0);
+      if (el.dataset.k === "mission") return this.render();
+      $(el).closest(".mglg-st-card").find(".mglg-st-total").text(calcMerit(v));
+    }));
+    html.find(".mglg-st-anchor").on("change", gmOnly((ev) => {
+      const el = ev.currentTarget, a = stCard(el); if (!a || el.value === "") return;
+      this._settleState(a).anchorFate = Number(el.value) || 0; this.render();
+    }));
+    const applyOne = async (a) => {
+      const v = this._settleState(a), r = await applyMerit(a, v); if (!r) return;
+      ChatMessage.create({ content: `<div class="mglg-sess-chat"><b>공적점 정산</b> · ${escapeHTML(a.name)}<br>${escapeHTML(breakdown(v) || "획득 없음")}<br><b>${r.before} → ${r.after}</b> (+${r.gain})</div>`, speaker: { alias: "세션" } });
+      delete this._st[a.id];
+    };
+    html.find(".mglg-st-apply").on("click", gmOnly(async (ev) => {
+      const a = stCard(ev.currentTarget); if (!a) return;
+      await applyOne(a); this.render();
+    }));
+    html.find(".mglg-st-apply-all").on("click", gmOnly(async () => {
+      if (!(await Dialog.confirm({ title: "공적점 정산", content: "<p>표시된 모든 캐릭터의 공적점에 이번 획득분을 더합니다. 계속할까요?</p>" }))) return;
+      for (const a of settleActors()) await applyOne(a);
+      this.render();
+    }));
     html.find(".mglg-sess-tab").on("click", (ev) => { this._tab = ev.currentTarget.dataset.tab; this.render(); });
     const say = (head, body) => ChatMessage.create({
       content: `<div class="mglg-sess-chat"><b>${head}</b> · ${escapeHTML(body)}</div>`, speaker: { alias: "세션" }

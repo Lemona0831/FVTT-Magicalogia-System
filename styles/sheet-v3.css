@@ -519,3 +519,13 @@
 .mglg-plot .pd.gone { border-color: #c9c3e6; background: #f1eff9; }
 .mglg-plot .pd.gone img { opacity: .5; filter: grayscale(.6); }
 .mglg-plot .pd.gone::after { content: ""; inset: 3px; font-size: 0; background: linear-gradient(to top right, transparent calc(50% - 2.5px), #d63a4e calc(50% - 2.5px), #d63a4e calc(50% + 2.5px), transparent calc(50% + 2.5px)); }
+
+/* 정산 탭 */
+.mglg-st-card h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mglg-st-exp { font-size: 12px; font-weight: 400; opacity: .8; }
+.mglg-st-checks { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 6px; }
+.mglg-st-checks label { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; white-space: nowrap; }
+.mglg-st-card input[type=number] { width: 64px; flex: 0 0 auto; }
+.mglg-st-card select { min-width: 0; flex: 1 1 auto; }
+.mglg-st-sum { justify-content: space-between; margin-top: 6px; }
+.mglg-st-total { font-size: 18px; color: var(--acc); }
