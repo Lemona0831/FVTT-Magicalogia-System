@@ -97,16 +97,24 @@ export function initSlips() {
       t.update({ name: it.name, "texture.src": slipImage(areaOf(it.system.cost), it.system.charge), "delta.system.mana.value": Number(it.system.charge) || 0 });
     }
   });
-  // 맵에서 토큰 막대 값을 바꾸면 시트의 충전도 바꾼다 (같은 값이면 건드리지 않아 되돌이가 생기지 않는다)
-  Hooks.on("updateToken", (tk, ch) => {
-    if (!isMe()) return;
-    const s = tk.getFlag("magicalogia", "slip"); if (!s) return;
-    const f = foundry.utils.flattenObject(ch ?? {});
-    if (!("delta.system.mana.value" in f)) return;
-    const v = Math.max(0, Math.min(8, Number.parseInt(f["delta.system.mana.value"], 10) || 0));
+  // 맵에서 토큰 막대 값을 바꾸면 시트의 충전도 바꾼다 (같은 값이면 건드리지 않아 되돌이가 생기지 않는다).
+  // 막대 값 수정은 토큰이 아니라 토큰 아래 액터(ActorDelta)의 수정으로 들어오므로 두 경로 모두 받는다.
+  const toSheet = (tk, value) => {
+    const s = tk?.getFlag("magicalogia", "slip"); if (!s) return;
+    const v = Math.max(0, Math.min(8, Number.parseInt(value, 10) || 0));
     const it = game.actors.get(s.actorId)?.items.get(s.itemId);
     if (it && (Number(it.system.charge) || 0) !== v) it.update({ "system.charge": v });
     else if (!it) ui.notifications.warn(`'${tk.name}' 장서를 찾을 수 없습니다 (지워졌거나 캐릭터가 바뀜).`);
+  };
+  Hooks.on("updateToken", (tk, ch) => {
+    if (!isMe()) return;
+    const f = foundry.utils.flattenObject(ch ?? {});
+    if ("delta.system.mana.value" in f) toSheet(tk, f["delta.system.mana.value"]);
+  });
+  Hooks.on("updateActor", (a, ch) => {
+    if (!isMe() || !a.isToken) return;
+    const f = foundry.utils.flattenObject(ch ?? {});
+    if ("system.mana.value" in f) toSheet(a.token, f["system.mana.value"]);
   });
   Hooks.on("deleteItem", (it) => {
     if (!isMe() || it.type !== "ability") return;
