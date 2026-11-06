@@ -1,5 +1,5 @@
 import { escapeHTML } from "./escape.js";
-import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver } from "./plot-board.js";
+import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver, getZones } from "./plot-board.js";
 /**
  * 세션 도우미 (GM · PL 공용).
  *  - 장면 종류(드라마/전투/클라이맥스)와 현재 세계 법칙: GM 이 정하고 모두에게 동기화 (월드 설정 v3Session, 쓰기는 GM 만).
@@ -51,6 +51,18 @@ function myActor() {
   return game.user.character ?? canvas?.tokens?.controlled?.[0]?.actor ?? null;
 }
 
+/** "놓을 구역" 드롭다운: 4구역(자동) + 같은 이름의 칸이 여러 개면 칸별로 */
+function placeTargets() {
+  const out = [];
+  const zs = getZones();
+  for (const z of ZONES) {
+    out.push({ key: `${z.key}|`, label: z.label + (zs[z.key]?.length > 1 ? " (자동)" : "") });
+    const list = [...(zs[z.key] ?? [])].sort((a, b) => a.y - b.y || a.x - b.x);
+    if (list.length > 1) list.forEach((d, i) => out.push({ key: `${z.key}|${d.id}`, label: `${z.label} ${i + 1}` }));
+  }
+  return out;
+}
+
 export class SessionHelper extends Application {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -73,8 +85,8 @@ export class SessionHelper extends Application {
     const tab = this._tab ?? "status";
     return {
       tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", gm: tab === "gm" },
-      zones: ZONES, faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
-      observers: observerAreas().map((o) => ({ ...o, users: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === o.owner })), auto: !o.owner })),
+      zones: placeTargets(), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
+      observers: observerAreas().map((o) => ({ ...o, users: game.users.map((u) => ({ id: u.id, name: u.name, sel: u.id === o.owner })), auto: !o.owner })),
       theme: resolveTheme(),
       isGM: game.user.isGM,
       phase: { ...ph, types: PHASES.map((p) => ({ ...p, on: p.id === ph.id })) },
@@ -93,7 +105,8 @@ export class SessionHelper extends Application {
 
     html.find(".mglg-plot-add").on("click", (ev) => {
       const b = ev.currentTarget;
-      addDie({ zone: html.find(".mglg-plot-zone").val(), kind: b.dataset.kind, face: b.dataset.face ?? null });
+      const [zone, areaId] = String(html.find(".mglg-plot-zone").val()).split("|");
+      addDie({ zone, areaId: areaId || null, kind: b.dataset.kind, face: b.dataset.face ?? null });
     });
     html.find(".mglg-plot-add").attr("draggable", "true").on("dragstart", (ev) => {
       const b = ev.currentTarget;
