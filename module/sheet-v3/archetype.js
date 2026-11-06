@@ -139,3 +139,26 @@ export async function removeArchetypes(tokens) {
   if (!game.user.isGM || !tokens.length) return;
   await tokens[0].parent.deleteEmbeddedDocuments("Token", tokens.map((t) => t.id));
 }
+
+/* ---------- 블록 막대 위에 "현재/최대" 숫자 표시 ---------- */
+Hooks.on("refreshToken", (token) => {
+  try {
+    const bars = token.bars; if (!bars) return;
+    const old = bars.getChildByName?.("mglgBarText");
+    const isArch = token.document.getFlag("magicalogia", "archetype");
+    const bar = bars.bar1;
+    if (!isArch || !bar || !bar.visible || !bars.visible) { if (old) old.visible = false; return; }
+    const m = token.actor?.system?.mana; if (!m) return;
+    const txt = `${m.value}/${m.max}`;
+    let t = old;
+    if (!t) {
+      t = new PIXI.Text(txt, new PIXI.TextStyle({ fontFamily: "Signika, sans-serif", fontWeight: "bold", fill: "#ffffff", stroke: "#000000", strokeThickness: 3 }));
+      t.name = "mglgBarText"; t.anchor.set(0.5, 0.5);
+      bars.addChild(t);
+    }
+    t.text = txt; t.visible = true;
+    const b = bar.getLocalBounds();
+    t.style.fontSize = Math.max(10, b.height * 0.95);
+    t.position.set(bar.x + b.x + b.width / 2, bar.y + b.y + b.height / 2);
+  } catch (e) { /* 표시만 못 할 뿐 */ }
+});
