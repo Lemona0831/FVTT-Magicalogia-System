@@ -26,8 +26,24 @@ Hooks.once("init", () => {
   });
 });
 
-// 새로 만들어진 판정 카드만 "스티커 붙는" 연출을 재생한다.
+// 새로 만들어진 판정 카드만 연출을 재생한다 (스티커 슬램 -> 히트 스톱 -> 카운트 업 -> 결과 도장).
 // Dice So Nice 가 메시지를 숨겨 두는 동안에는 재생하지 않고, 화면에 보이는 순간 시작한다.
+// 연출 길이(ms): CSS 의 --d 와 맞춰야 한다.
+const POP_D = { success: 500, fail: 700, special: 700, fumble: 700 };
+
+function countUp(el, to, startMs, lenMs) {
+  const from = 2; // 2D6 최솟값부터 올라간다
+  if (!Number.isFinite(to) || to <= from) return;
+  el.textContent = String(from);
+  const t0 = performance.now() + startMs;
+  const tick = (now) => {
+    const k = Math.min(1, Math.max(0, (now - t0) / lenMs));
+    el.textContent = String(Math.round(from + (to - from) * (1 - Math.pow(1 - k, 2)))); // ease-out
+    if (k < 1) requestAnimationFrame(tick); else el.textContent = String(to);
+  };
+  requestAnimationFrame(tick);
+}
+
 Hooks.on("renderChatMessage", (message, html) => {
   if (!message.getFlag("magicalogia", "v3Roll")) return;
   if (Date.now() - (message.timestamp ?? 0) > 20000) return; // 오래된 메시지는 연출 없음
@@ -35,9 +51,13 @@ Hooks.on("renderChatMessage", (message, html) => {
   const card = html[0]?.querySelector?.(".mglg-card") ?? html.find?.(".mglg-card")?.[0];
   if (!card || card.dataset.mglgPlayed) return;
   card.dataset.mglgPlayed = "1";
+  const outcome = message.getFlag("magicalogia", "v3Roll")?.outcome ?? "success";
+  const d = POP_D[outcome] ?? 500;
   const io = new IntersectionObserver((entries) => {
     if (!entries.some((e) => e.isIntersecting)) return;
     io.disconnect();
+    const total = card.querySelector(".mglg-total");
+    if (total) countUp(total, Number(total.textContent), d * 0.85, 450);
     card.classList.add("mglg-pop");
   });
   io.observe(card);
