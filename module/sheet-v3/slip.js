@@ -3,7 +3,8 @@
  *  - 장서(마법) 한 권마다 토큰 하나. 토큰 이름 = 마법 이름 (마우스를 올리면 표시).
  *  - 그림 = 코스트에 적힌 영역(별·짐승·힘·노래·꿈·어둠·전체)의 책, 칸이 찬 수 = 현재 충전(마소).
  *    코스트에 영역이 여럿이면 영역 순서(별→전체)에서 마지막으로 나오는 것, 없으면 전체 (Roll20 과 같은 규칙).
- *  - 시트에서 충전을 바꾸면 맵의 토큰 그림도 바뀐다 (시트 → 토큰 한 방향).
+ *  - 충전은 양방향: 시트에서 바꾸면 토큰 그림이 바뀌고, 맵에서 토큰 막대 값(토큰 우클릭 HUD의 막대 칸)을 바꾸면 시트 충전이 바뀐다.
+ *    토큰의 막대(bar1)는 공용 액터의 system.mana 를 빌려 쓰며, 막대 자체는 숨기고 그림의 찬 칸으로 보여 준다.
  * 이미지는 assets/slip/ (설치본에만 둔다 — .gitignore 참고).
  */
 const ASSET = "systems/magicalogia/assets/slip";
@@ -69,12 +70,19 @@ export async function gmSlips({ items, sceneId, x, y, owner }) {
       name: it.name, actorId: actor.id, actorLink: false,
       x: Math.round((x ?? 0) - 3 * SIZE + col * SIZE), y: Math.round((y ?? 0) - SIZE / 2 + row * SIZE),
       width: SIZE / g, height: SIZE / g, texture: { src: slipImage(areaOf(it.system.cost), it.system.charge) },
-      displayName: CONST.TOKEN_DISPLAY_MODES.HOVER, disposition: 0, lockRotation: true, sight: { enabled: false },
+      displayName: CONST.TOKEN_DISPLAY_MODES.HOVER, displayBars: CONST.TOKEN_DISPLAY_MODES.NONE, bar1: { attribute: "mana" },
+      disposition: 0, lockRotation: true, sight: { enabled: false },
       flags: { magicalogia: { slip: { actorId, itemId, owner } } }
     });
     count++;
   }
-  if (docs.length) await sc.createEmbeddedDocuments("Token", docs);
+  if (docs.length) {
+    const made = await sc.createEmbeddedDocuments("Token", docs);
+    for (const t of made) { // 막대 값 = 충전 (최대 8)
+      const it = game.actors.get(t.getFlag("magicalogia", "slip").actorId)?.items.get(t.getFlag("magicalogia", "slip").itemId);
+      await t.update({ "delta.system.mana.value": Number(it?.system.charge) || 0, "delta.system.mana.max": 8 });
+    }
+  }
   else ui.notifications.info("새로 놓을 장서가 없습니다 (이미 이 장면에 있거나 장서가 없습니다).");
 }
 
@@ -86,8 +94,19 @@ export function initSlips() {
     const f = foundry.utils.flattenObject(ch ?? {});
     if (!["system.charge", "system.cost", "name"].some((k) => k in f)) return;
     for (const t of findSlips(it.id)) {
-      t.update({ name: it.name, "texture.src": slipImage(areaOf(it.system.cost), it.system.charge) });
+      t.update({ name: it.name, "texture.src": slipImage(areaOf(it.system.cost), it.system.charge), "delta.system.mana.value": Number(it.system.charge) || 0 });
     }
+  });
+  // 맵에서 토큰 막대 값을 바꾸면 시트의 충전도 바꾼다 (같은 값이면 건드리지 않아 되돌이가 생기지 않는다)
+  Hooks.on("updateToken", (tk, ch) => {
+    if (!isMe()) return;
+    const s = tk.getFlag("magicalogia", "slip"); if (!s) return;
+    const f = foundry.utils.flattenObject(ch ?? {});
+    if (!("delta.system.mana.value" in f)) return;
+    const v = Math.max(0, Math.min(8, Number.parseInt(f["delta.system.mana.value"], 10) || 0));
+    const it = game.actors.get(s.actorId)?.items.get(s.itemId);
+    if (it && (Number(it.system.charge) || 0) !== v) it.update({ "system.charge": v });
+    else if (!it) ui.notifications.warn(`'${tk.name}' 장서를 찾을 수 없습니다 (지워졌거나 캐릭터가 바뀜).`);
   });
   Hooks.on("deleteItem", (it) => {
     if (!isMe() || it.type !== "ability") return;
