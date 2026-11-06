@@ -306,23 +306,14 @@ export async function resolvePlot(attackerSide) {
   const row = (label, list, kind) => `<div class="pr"><span class="pl">${label}</span><span class="pdice">${list.length ? list.map((x) => die(x, kind)).join("") : "<i>없음</i>"}</span></div>`;
   const firstSide = getFirst(sc);
   const aName = `${A === firstSide ? "선공" : "후공"}(${SIDE[A]})`, dName = `${D === firstSide ? "선공" : "후공"}(${SIDE[D]})`;
-  const head = res.success === "hit"
-    ? `<div class="pres hit">공격 성공 · 대미지 ${res.damage}</div>`
-    : `<div class="pres ok">방어 성공</div>`;
-  const notes = [];
-  if (res.focusDeclared) notes.push(`집중 방어: ${res.focusFaces.join("·")} 눈의 공격 주사위를 모두 제거`);
-  if (res.focusIgnored) notes.push("집중 토큰이 있지만 대표 칸의 방어 주사위가 2개가 아니라 일반 방어로 처리");
-  if (res.unusedDefense.length) notes.push(`남은 방어 주사위 ${res.unusedDefense.join("·")} → 대미지 적용 후 마소로 변환 가능`);
-  notes.push("[추가 대미지]·[블록] 등 이펙트는 따로 적용하세요.");
+  // 대미지·방어 성공 여부는 계산해서 보여주지 않는다 (원호 등 다른 효과가 있을 수 있음). 무엇이 지워지고 무엇이 남았는지만 보여준다.
+  const focusNote = res.focusDeclared ? `<div class="pn">집중 방어 · ${res.focusFaces.join("·")} 눈의 공격 주사위를 모두 제거</div>` : "";
   const content = `<div class="mglg-plot">
-    <div class="ph">플롯 비교</div>
     <div class="pvs"><b>${aName}</b> 공격 <span>→</span> <b>${dName}</b> 방어</div>
     ${row("공격", res.attack, "atk")}
     ${row("방어 · 대표", res.defDelegate, "def")}
-    ${row("방어 · 입회", res.defObserver, "def")}
-    ${head}
-    <ul class="pn">${notes.map((n) => `<li>${escapeHTML(n)}</li>`).join("")}</ul>
-    <div class="pk"><span class="pd atk"><i></i></span> 남은 공격(대미지) <span class="pd def"><i></i></span> 남은 방어 <span class="pd gone"><i></i></span> 제거됨</div>
+    ${res.defObserver.length ? row("방어 · 입회", res.defObserver, "def") : ""}
+    ${focusNote}
   </div>`;
   ChatMessage.create({ content, speaker: { alias: "세션" } });
 }

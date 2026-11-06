@@ -510,3 +510,7 @@
 .mglg-plot .pk { margin-top: 6px; font-size: 12px; opacity: .85; }
 .mglg-plot .pk .pd { width: 14px; height: 14px; padding: 0; border-width: 2px; vertical-align: -3px; border-radius: 4px; }
 .mglg-plot .pk .pd i { display: none; }
+
+.mglg-plot .ph, .mglg-plot .pres, .mglg-plot .pk { display: none; }
+.mglg-plot .pn { margin: 6px 0 0; padding: 0; font-size: 13px; list-style: none; }
+.mglg-plot .pvs { margin: 0 0 6px; }
