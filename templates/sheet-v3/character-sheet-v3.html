@@ -228,27 +228,31 @@
         <div class="mglg-card-head"><h2>핸드아웃</h2><span class="mglg-note">{{#if v3.isGM}}핸드아웃은 세션 도우미에서 만들고 공개합니다{{else}}GM이 나에게 공개한 핸드아웃만 보입니다{{/if}}</span><span class="mglg-grow"></span>
           {{#if v3.isGM}}<button type="button" class="mglg-btn mglg-ho-open" title="세션 도우미의 핸드아웃 탭을 엽니다">핸드아웃 관리</button>{{/if}}</div>
         {{#if v3.hoList.length}}
-        <div class="mglg-ho2">
-          <div class="mglg-ho2-list" role="listbox" aria-label="핸드아웃 목록">
-            {{#each v3.hoList}}
-            <button type="button" class="mglg-ho-pick {{#if on}}on{{/if}}" data-id="{{id}}" role="option" aria-selected="{{on}}">
-              <span class="mglg-ho2-name">{{name}}</span>
-              {{#if hasSecret}}<span class="mglg-ho2-tag" title="비밀이 있는 핸드아웃">🔒</span>{{/if}}
+        <div class="mglg-ho3-list">
+          {{#each v3.hoList}}
+          <div class="mglg-ho3 {{#if on}}open{{/if}}">
+            <button type="button" class="mglg-ho-pick {{#if on}}on{{/if}}" data-id="{{id}}" aria-expanded="{{on}}">
+              <span class="mglg-ho3-name">{{name}}</span>
+              {{#if hasSecret}}<span class="mglg-ho3-tag" title="비밀이 있는 핸드아웃">🔒</span>{{/if}}
+              <span class="mglg-ho3-caret">{{#if on}}▾{{else}}▸{{/if}}</span>
             </button>
-            {{/each}}
-          </div>
-          <div class="mglg-ho2-view">
-            {{#with v3.hoCur}}
-            <h3 class="mglg-ho2-title">{{name}}</h3>
-            <div class="mglg-ho-label">공개 정보</div>
-            <div class="mglg-hand-body">{{{html}}}</div>
-            {{#if hasSecret}}
-            <div class="mglg-ho-label">비밀{{#if talent}} · 조사 특기: {{talent}}{{/if}}</div>
-            {{#if secretShown}}<div class="mglg-hand-body mglg-ho-secret">{{{secretHtml}}}</div>
-            {{else}}{{#if secretLocked}}<p class="mglg-note">🔒 아직 밝혀지지 않았습니다{{#if talent}} — {{talent}} (으)로 조사하세요{{/if}}.</p>{{/if}}{{/if}}
+            {{#if on}}
+            <div class="mglg-ho3-body">
+              <section class="mglg-ho3-col">
+                <div class="mglg-ho-label">공개 정보</div>
+                <div class="mglg-hand-body">{{{html}}}</div>
+              </section>
+              {{#if hasSecret}}
+              <section class="mglg-ho3-col sec">
+                <div class="mglg-ho-label">비밀{{#if talent}} · 조사 특기: {{talent}}{{/if}}</div>
+                {{#if secretShown}}<div class="mglg-hand-body mglg-ho-secret">{{{secretHtml}}}</div>
+                {{else}}<p class="mglg-ho3-lock">🔒 비공개{{#if talent}}<br><small>{{talent}} (으)로 조사하세요</small>{{/if}}</p>{{/if}}
+              </section>
+              {{/if}}
+            </div>
             {{/if}}
-            {{/with}}
           </div>
+          {{/each}}
         </div>
         {{else}}<p class="mglg-note">{{#if v3.isGM}}핸드아웃이 없습니다. '핸드아웃 관리'에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p>{{/if}}
       </section>

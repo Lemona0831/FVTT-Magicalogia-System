@@ -27,25 +27,14 @@ export async function journalHTML(j) {
   return TextEditor.enrichHTML(html, { async: true });
 }
 
-/** 시트용: 목록 전체(가볍게) + 선택한 한 건의 상세. GM 은 선택한 것의 내용·비밀까지 본다 */
+/** 시트용: 보이는 핸드아웃 목록. 펼친 한 건에만 내용(공개 정보·비밀)을 붙인다. GM 은 선택하면 비밀까지 본다 */
 export async function sheetRows(selId) {
-  const all = visibleHandouts(), gm = game.user.isGM;
-  const sel = all.find((j) => j.id === selId) ?? all[0];
-  const list = all.map((j) => {
-    const f = info(j), s = secretOf(j);
-    return { id: j.id, name: j.name, hasSecret: !!f.secretId, secretOpen: gm ? false : !!s, on: j.id === sel?.id };
-  });
-  let cur = null;
-  if (sel) {
-    const f = info(sel), s = secretOf(sel);
-    cur = {
-      id: sel.id, name: sel.name, talent: f.talent, hasSecret: !!f.secretId,
-      html: await journalHTML(sel),
-      secretShown: !!s, secretHtml: s ? await journalHTML(s) : "",
-      secretLocked: !!f.secretId && !s
-    };
-  }
-  return { list, cur };
+  return Promise.all(visibleHandouts().map(async (j) => {
+    const f = info(j), s = secretOf(j), on = j.id === selId;
+    const row = { id: j.id, name: j.name, hasSecret: !!f.secretId, talent: f.talent, on };
+    if (on) Object.assign(row, { html: await journalHTML(j), secretShown: !!s, secretHtml: s ? await journalHTML(s) : "" });
+    return row;
+  }));
 }
 
 export const isShown = (j, user) => !!j && j.testUserPermission(user, "OBSERVER");

@@ -22,34 +22,37 @@
   <section class="mglg-sess-box mglg-ho" data-id="{{id}}">
     <h3 class="mglg-ho-head" title="펼치기/접기">{{#if open}}▾{{else}}▸{{/if}} {{name}}{{#if hasSecret}} <span class="mglg-ho-lock">🔒</span>{{/if}}</h3>
     {{#if open}}
-    <div class="mglg-ho-label">공개 정보</div>
-    <div class="mglg-ho-body">{{{html}}}</div>
-    {{#if hasSecret}}
-    <div class="mglg-ho-label">비밀{{#if talent}} · 조사 특기: {{talent}}{{/if}}</div>
-    {{#if secretShown}}<div class="mglg-ho-body mglg-ho-secret">{{{secretHtml}}}</div>
-    {{else}}{{#if secretLocked}}<p class="mglg-sess-empty">🔒 아직 밝혀지지 않았습니다{{#if talent}} — {{talent}} (으)로 조사하세요{{/if}}.</p>{{/if}}{{/if}}
-    {{/if}}
-    {{/if}}
-    {{#if ../isGM}}
-    <div class="mglg-sess-gm">
-      <div class="mglg-ho-label">공개 정보 보이기</div>
-      <div class="mglg-ho-targets">
-        <button type="button" class="mglg-ho-all mini {{#if pubAll}}on{{/if}}" data-kind="pub" title="모든 플레이어에게 공개/숨김">모두</button>
-        {{#each pubUsers}}<button type="button" class="mglg-ho-toggle mini {{#if on}}on{{/if}}" data-kind="pub" data-user="{{id}}" title="{{#if on}}공개 중 (누르면 숨김){{else}}숨김 (누르면 공개){{/if}}">{{name}}</button>{{/each}}
+    <div class="mglg-ho3-body">
+      <div class="mglg-ho3-col">
+        <div class="mglg-ho-label">공개 정보</div>
+        <div class="mglg-ho-body">{{{html}}}</div>
+        {{#if @root.isGM}}
+        <div class="mglg-sess-gm">
+          <div class="mglg-ho-targets">
+            <button type="button" class="mglg-ho-all mini {{#if pubAll}}on{{/if}}" data-kind="pub" title="모든 플레이어에게 공개 정보 보이기/숨기기">모두</button>
+            {{#each pubUsers}}<button type="button" class="mglg-ho-toggle mini {{#if on}}on{{/if}}" data-kind="pub" data-user="{{id}}" title="{{#if on}}보이는 중 (누르면 숨김){{else}}숨김 (누르면 보임){{/if}}">{{name}}</button>{{/each}}
+          </div>
+          <button type="button" class="mglg-ho-edit mini" data-kind="pub">공개 정보 편집</button>
+        </div>
+        {{/if}}
       </div>
       {{#if hasSecret}}
-      <div class="mglg-ho-label">비밀 공개 (조사 성공 시)</div>
-      <div class="mglg-ho-targets">
-        <button type="button" class="mglg-ho-all mini {{#if secAll}}on{{/if}}" data-kind="secret" title="모든 플레이어에게 비밀 공개/숨김">모두</button>
-        {{#each secUsers}}<button type="button" class="mglg-ho-toggle mini {{#if on}}on{{/if}}" data-kind="secret" data-user="{{id}}" title="{{#if on}}비밀 공개됨 (누르면 숨김){{else}}숨김 (누르면 공개){{/if}}">{{name}}</button>{{/each}}
+      <div class="mglg-ho3-col sec">
+        <div class="mglg-ho-label">비밀{{#if talent}} · 조사 특기: {{talent}}{{/if}}</div>
+        {{#if secretShown}}<div class="mglg-ho-body mglg-ho-secret">{{{secretHtml}}}</div>{{else}}<p class="mglg-ho3-lock">🔒 비공개</p>{{/if}}
+        {{#if @root.isGM}}
+        <div class="mglg-sess-gm">
+          <div class="mglg-ho-targets">
+            <button type="button" class="mglg-ho-all mini {{#if secAll}}on{{/if}}" data-kind="secret" title="모든 플레이어에게 비밀 공개/숨기기">모두</button>
+            {{#each secUsers}}<button type="button" class="mglg-ho-toggle mini {{#if on}}on{{/if}}" data-kind="secret" data-user="{{id}}" title="{{#if on}}비밀 공개됨 (누르면 숨김){{else}}숨김 (누르면 공개){{/if}}">{{name}}</button>{{/each}}
+          </div>
+          <button type="button" class="mglg-ho-edit mini" data-kind="secret">비밀 편집</button>
+        </div>
+        {{/if}}
       </div>
       {{/if}}
-      <div class="mglg-sess-row">
-        <button type="button" class="mglg-ho-edit" data-kind="pub">공개 정보 편집</button>
-        {{#if hasSecret}}<button type="button" class="mglg-ho-edit" data-kind="secret">비밀 편집</button>{{/if}}
-        <button type="button" class="mglg-ho-del">삭제</button>
-      </div>
     </div>
+    {{#if @root.isGM}}<div class="mglg-sess-gm"><div class="mglg-sess-row"><button type="button" class="mglg-ho-del mini">이 핸드아웃 삭제</button></div></div>{{/if}}
     {{/if}}
   </section>
   {{else}}<p class="mglg-sess-empty">{{#if isGM}}핸드아웃이 없습니다. 위에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p>{{/each}}
