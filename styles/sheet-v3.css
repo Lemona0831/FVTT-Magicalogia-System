@@ -485,3 +485,28 @@
 .mglg-sess .mglg-plot-dice button { padding: 2px !important; line-height: 0; border-radius: 10px; }
 .mglg-plot-dice img { width: 40px; height: 40px; display: block; border: 0; }
 .mglg-sess-hint { margin: 4px 0 0; font-size: 13px; line-height: 1.5; opacity: .85; }
+/* 플롯 비교 결과 카드 */
+.mglg-plot { padding: 10px 12px; border: 2.5px solid #2a2352; border-radius: 12px; background: #fff7d6; box-shadow: 3px 3px 0 #2a2352; font-family: "Gothic A1","Malgun Gothic",sans-serif; }
+.mglg-plot, .mglg-plot * { color: #2a2352 !important; text-shadow: none !important; }
+.mglg-plot .ph { font-size: 12px; font-weight: 900; letter-spacing: .08em; opacity: .75; }
+.mglg-plot .pvs { margin: 2px 0 8px; font-size: 15px; font-weight: 700; }
+.mglg-plot .pvs b { font-size: 16px; }
+.mglg-plot .pr { display: flex; align-items: center; gap: 8px; margin: 5px 0; padding: 4px 6px; background: #fff; border: 1.5px solid #2a2352; border-radius: 8px; }
+.mglg-plot .pl { flex: 0 0 74px; font-size: 13px; font-weight: 900; }
+.mglg-plot .pdice { display: flex; flex-wrap: wrap; gap: 4px; }
+.mglg-plot .pd { position: relative; display: inline-block; line-height: 0; border-radius: 10px; padding: 2px; border: 3px solid transparent; }
+.mglg-plot .pd img { width: 44px; height: 44px; display: block; border: 0; }
+.mglg-plot .pd.atk { border-color: #e0455a; background: #ffe3e7; }
+.mglg-plot .pd.def { border-color: #2fa36b; background: #dff7ea; }
+.mglg-plot .pd.gone { border-color: #b9b4d6; background: #ececf4; }
+.mglg-plot .pd.gone img { opacity: .35; filter: grayscale(1); }
+.mglg-plot .pd.gone::after { content: "✕"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; line-height: 1; color: #6c6794 !important; }
+.mglg-plot .pk .pd.gone::after { content: none; }
+.mglg-plot .pr i { font-size: 13px; opacity: .6; }
+.mglg-plot .pres { margin: 8px 0 4px; padding: 6px 10px; border: 2.5px solid #2a2352; border-radius: 10px; font-size: 20px; font-weight: 900; text-align: center; }
+.mglg-plot .pres.hit { background: #ffc9d0; }
+.mglg-plot .pres.ok { background: #b9f0d2; }
+.mglg-plot .pn { margin: 6px 0 4px; padding-left: 18px; font-size: 13px; line-height: 1.55; }
+.mglg-plot .pk { margin-top: 6px; font-size: 12px; opacity: .85; }
+.mglg-plot .pk .pd { width: 14px; height: 14px; padding: 0; border-width: 2px; vertical-align: -3px; border-radius: 4px; }
+.mglg-plot .pk .pd i { display: none; }

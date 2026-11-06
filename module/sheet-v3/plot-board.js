@@ -301,19 +301,28 @@ export async function resolvePlot(attackerSide) {
   mark(res.attack, z[`${A}_delegate`].tiles); mark(res.defDelegate, z[`${D}_delegate`].tiles); mark(res.defObserver, z[`${D}_observer`].tiles);
   if (updates.length) await sc.updateEmbeddedDocuments("Token", updates);
 
-  const die = (x) => `<img src="${faceImg(x.face)}" style="width:34px;height:34px;${x.broken ? "opacity:.3" : ""}">`;
-  const row = (label, list) => `<div style="margin:3px 0"><span style="display:inline-block;width:64px">${label}</span>${list.length ? list.map(die).join("") : "<i>없음</i>"}</div>`;
-  const head = res.success === "hit" ? `<b style="color:#c0392b">공격 성공 · 대미지 ${res.damage}</b>` : `<b style="color:#1e8c5b">방어 성공</b>`;
+  // 공격 주사위: 남은 것(= 대미지)은 빨간 테두리 / 방어 주사위: 남은 것은 초록 테두리 / 제거된 것은 흐리게 + ✕
+  const die = (x, kind) => `<span class="pd ${x.broken ? "gone" : kind}"><img src="${faceImg(x.face)}" alt="${x.face}"></span>`;
+  const row = (label, list, kind) => `<div class="pr"><span class="pl">${label}</span><span class="pdice">${list.length ? list.map((x) => die(x, kind)).join("") : "<i>없음</i>"}</span></div>`;
+  const firstSide = getFirst(sc);
+  const aName = `${A === firstSide ? "선공" : "후공"}(${SIDE[A]})`, dName = `${D === firstSide ? "선공" : "후공"}(${SIDE[D]})`;
+  const head = res.success === "hit"
+    ? `<div class="pres hit">공격 성공 · 대미지 ${res.damage}</div>`
+    : `<div class="pres ok">방어 성공</div>`;
   const notes = [];
   if (res.focusDeclared) notes.push(`집중 방어: ${res.focusFaces.join("·")} 눈의 공격 주사위를 모두 제거`);
-  if (res.focusIgnored) notes.push("집중 토큰이 있지만 대표 구역의 방어 주사위가 2개가 아니라 일반 방어로 처리");
-  if (res.unusedDefense.length) notes.push(`남은 방어 주사위 ${res.unusedDefense.join("·")} (대미지 적용 후 마소로 변환 가능)`);
+  if (res.focusIgnored) notes.push("집중 토큰이 있지만 대표 칸의 방어 주사위가 2개가 아니라 일반 방어로 처리");
+  if (res.unusedDefense.length) notes.push(`남은 방어 주사위 ${res.unusedDefense.join("·")} → 대미지 적용 후 마소로 변환 가능`);
   notes.push("[추가 대미지]·[블록] 등 이펙트는 따로 적용하세요.");
-  const content = `<div class="mglg-sess-chat">
-    <b>플롯 비교</b> · ${A === getFirst(sc) ? "선공" : "후공"}(${SIDE[A]}) 공격 → ${A === getFirst(sc) ? "후공" : "선공"}(${SIDE[D]}) 방어<br>
-    ${row(`${SIDE[A]} 공격`, res.attack)}${row(`${SIDE[D]} 대표`, res.defDelegate)}${row(`${SIDE[D]} 입회`, res.defObserver)}
-    <div style="margin-top:6px">${head}</div>
-    ${notes.map((n) => `<div style="font-size:12px">${escapeHTML(n)}</div>`).join("")}
+  const content = `<div class="mglg-plot">
+    <div class="ph">플롯 비교</div>
+    <div class="pvs"><b>${aName}</b> 공격 <span>→</span> <b>${dName}</b> 방어</div>
+    ${row("공격", res.attack, "atk")}
+    ${row("방어 · 대표", res.defDelegate, "def")}
+    ${row("방어 · 입회", res.defObserver, "def")}
+    ${head}
+    <ul class="pn">${notes.map((n) => `<li>${escapeHTML(n)}</li>`).join("")}</ul>
+    <div class="pk"><span class="pd atk"><i></i></span> 남은 공격(대미지) <span class="pd def"><i></i></span> 남은 방어 <span class="pd gone"><i></i></span> 제거됨</div>
   </div>`;
   ChatMessage.create({ content, speaker: { alias: "세션" } });
 }
