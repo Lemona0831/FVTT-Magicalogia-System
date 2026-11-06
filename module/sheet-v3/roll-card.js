@@ -5,6 +5,11 @@
  */
 
 const REALM_LABELS = ["A1", "B1", "C1", "D1", "E1", "F1"];
+// 주사위 눈 배치 (3x3 격자, 왼쪽 위부터)
+const PIPS = {
+  1: [0,0,0,0,1,0,0,0,0], 2: [1,0,0,0,0,0,0,0,1], 3: [1,0,0,0,1,0,0,0,1],
+  4: [1,0,1,0,0,0,1,0,1], 5: [1,0,1,0,1,0,1,0,1], 6: [1,0,1,1,0,1,1,0,1]
+};
 
 /** 보정값 입력 창. 확인하면 숫자(비어 있으면 0), 닫으면 null */
 function askModifier(title) {
@@ -62,12 +67,12 @@ export async function rollTalentCard(actor, { title, target, ask = false, secret
 
   const content = await renderTemplate("systems/magicalogia/templates/sheet-v3/roll-card.html", {
     theme,
-    realm,
+    realmIdx: (realm !== "" && Number(realm) >= 0 && Number(realm) < 6) ? Number(realm) : "x",
     actorName: actor?.name ?? "",
     title,
     formula: roll.formula.replace(/\s+/g, ""),
     target,
-    dice,
+    dice: dice.map((n) => ({ n, one: n === 1, pips: PIPS[n] })),
     total,
     modifiers: [
       add ? { label: "보정", value: add > 0 ? `+${add}` : `${add}` } : null,
@@ -76,7 +81,7 @@ export async function rollTalentCard(actor, { title, target, ask = false, secret
     outcome,
     outcomeLabel,
     success,
-    doublet: isDoublet ? game.i18n.localize(`MAGICALOGIA.${REALM_LABELS[dice[0] - 1]}`) : null
+    doublet: isDoublet ? game.i18n.localize(`MAGICALOGIA.${REALM_LABELS[dice[0] - 1]}`).replace(/^\s*\d+\.\s*/, "") : null
   });
 
   const chatData = {
