@@ -445,13 +445,6 @@
 .mglg-sess-custom { margin-top: 8px; font-size: 12px; }
 .mglg-sess-custom input, .mglg-sess-custom textarea { width: 100%; margin: 4px 0; box-sizing: border-box; }
 .mglg-sess-who { font-size: 13px; }
-/* 세션 상태 띠: 작고 반투명, 마우스를 올릴 때만 또렷하게 */
-#mglg-session-strip { position: fixed; top: 6px; right: 330px; z-index: 60; display: flex; align-items: center; gap: 6px;
-  padding: 2px 6px 2px 12px; font: 700 12px/20px "Gothic A1","Malgun Gothic",sans-serif; color: #2a2352; background: #fff7d6;
-  border: 2px solid #2a2352; border-radius: 99px; box-shadow: 2px 2px 0 #2a2352; opacity: .55; cursor: pointer; user-select: none; touch-action: none; transition: opacity .15s; }
-#mglg-session-strip:hover { opacity: 1; }
-#mglg-session-strip[hidden] { display: none; }
-#mglg-session-strip .mglg-strip-x { border: 0; background: none; color: #2a2352; cursor: pointer; padding: 0 4px; font-size: 11px; line-height: 20px; }
 /* 가독성 고정: 코어/다른 모듈 CSS 에 색·폭이 덮이지 않게 */
 .mglg-sess, .mglg-sess * { color: var(--ink) !important; text-shadow: none !important; }
 .mglg-sess .mglg-sess-badge { color: #2a2352 !important; }
@@ -470,3 +463,20 @@
 .mglg-sess-cyc-n { min-width: 28px; text-align: center; font-size: 18px; }
 .mglg-sess-chat { padding: 6px 10px; border: 2px solid #2a2352; border-radius: 10px; background: #fff7d6; color: #2a2352; font-size: 13px; }
 .mglg-sess-chat span { font-size: 12px; line-height: 1.5; }
+
+/* 세션 도우미: 탭 + 큰 글씨 */
+.mglg-sess { font-size: 14px; }
+.mglg-sess-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.mglg-sess-tabs .mglg-sess-tab { flex: 1 1 0 !important; font-size: 15px; padding: 4px 0 !important; border-radius: 10px 10px 4px 4px !important; }
+.mglg-sess-tabs .mglg-sess-tab.on { background: var(--acc) !important; color: #fff !important; }
+.mglg-sess-tabs .mglg-sess-tab.gm { border-style: dashed !important; }
+.mglg-sess-tabs .mglg-sess-tab.gm.on { background: #2a2352 !important; color: #ffd23f !important; border-style: solid !important; }
+.mglg-sess-big { font-size: 20px; font-weight: 900; margin-top: 2px; }
+.mglg-sess-steps { display: flex; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
+.mglg-sess-steps li { flex: 1; text-align: center; padding: 3px 0; border: 2px solid var(--line); border-radius: 8px; opacity: .45; font-weight: 700; }
+.mglg-sess-steps li.on { opacity: 1; background: var(--ok); }
+.mglg-sess-steps li.on, .mglg-sess-steps li.on * { color: #2a2352 !important; }
+.mglg-sess-law-text, .mglg-sess-empty, .mglg-sess-who { font-size: 14px !important; }
+.mglg-sess button { font-size: 14px; }
+.mglg-sess-gm .mglg-sess-box { border-style: dashed; border-color: #ff4f93 !important; box-shadow: 3px 3px 0 #ff4f93; }
+.mglg-sess-gm h3::before { content: "GM"; margin-right: 6px; padding: 0 6px; border-radius: 6px; background: #2a2352; color: #ffd23f !important; font-size: 11px; }

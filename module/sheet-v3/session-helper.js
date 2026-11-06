@@ -68,7 +68,10 @@ export class SessionHelper extends Application {
     const inUse = new Set(st.laws.map((l) => l.name));
     const actor = myActor();
     const ph = PHASES.find((p) => p.id === st.phase) ?? PHASES[0];
+    if (this._tab === "gm" && !game.user.isGM) this._tab = "status";
+    const tab = this._tab ?? "status";
     return {
+      tab: { status: tab === "status", roll: tab === "roll", gm: tab === "gm" },
       theme: resolveTheme(),
       isGM: game.user.isGM,
       phase: { ...ph, types: PHASES.map((p) => ({ ...p, on: p.id === ph.id })) },
@@ -85,6 +88,7 @@ export class SessionHelper extends Application {
     super.activateListeners(html);
     const gmOnly = (fn) => (...a) => { if (!game.user.isGM) return ui.notifications.warn("GM 만 바꿀 수 있습니다."); return fn(...a); };
 
+    html.find(".mglg-sess-tab").on("click", (ev) => { this._tab = ev.currentTarget.dataset.tab; this.render(); });
     const say = (head, body) => ChatMessage.create({
       content: `<div class="mglg-sess-chat"><b>${head}</b> · ${escapeHTML(body)}</div>`, speaker: { alias: "세션" }
     });

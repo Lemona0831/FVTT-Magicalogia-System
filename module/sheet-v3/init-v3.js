@@ -1,7 +1,6 @@
 import { MagicalogiaActorSheetV3 } from "./actor-sheet-v3.js";
 import { TablesConfigApp } from "./tables.js";
 import { openSessionHelper, refreshSessionHelper } from "./session-helper.js";
-import { initStrip, refreshStrip, toggleStrip } from "./session-strip.js";
 
 export const THEMES = ["rulebook", "academy", "summer", "urban"];
 
@@ -36,7 +35,7 @@ Hooks.once("init", () => {
   // 세션 도우미 상태 (장면 종류, 적용 중인 세계 법칙). 쓰기는 GM 만.
   game.settings.register("magicalogia", "v3Session", {
     scope: "world", config: false, type: Object, default: { sceneType: "drama", laws: [] },
-    onChange: () => { refreshSessionHelper(); refreshStrip(); }
+    onChange: () => refreshSessionHelper()
   });
   game.settings.registerMenu("magicalogia", "v3TablesMenu", {
     name: "시트 v3 · 각종 표 구성",
@@ -92,20 +91,16 @@ const safeOpen = () => {
 Hooks.once("ready", () => {
   game.magicalogia = game.magicalogia ?? {};
   game.magicalogia.openSession = safeOpen;
-  try { initStrip(); } catch (e) { console.warn("magicalogia | 상태 띠를 만들지 못했습니다", e); }
 });
 Hooks.on("getSceneControlButtons", (controls) => {
   const group = controls.find((c) => c.name === "token") ?? controls[0];
   if (!group?.tools || group.tools.some((t) => t.name === "mglgSession")) return;
-  group.tools.push({ name: "mglgSession", title: "세션 도우미", icon: "fas fa-wand-sparkles", button: true, onClick: () => { toggleStrip(true); safeOpen(); } });
+  group.tools.push({ name: "mglgSession", title: "세션 도우미", icon: "fas fa-wand-sparkles", button: true, onClick: safeOpen });
 });
 Hooks.once("init", () => {
   try {
     game.keybindings.register("magicalogia", "openSession", {
       name: "세션 도우미 열기", editable: [{ key: "KeyS", modifiers: ["Alt"] }], onDown: () => { safeOpen(); return true; }
-    });
-    game.keybindings.register("magicalogia", "toggleStrip", {
-      name: "세션 상태 띠 표시/숨김", editable: [{ key: "KeyS", modifiers: ["Alt", "Shift"] }], onDown: () => { toggleStrip(); return true; }
     });
   } catch (e) { console.warn("magicalogia | 단축키 등록 실패", e); }
 });
