@@ -133,9 +133,13 @@ async function gmAddDie({ zone, kind, face, owner, sceneId, areaId }) {
   const diceIn = (d) => { const rr = zoneRect(d); return sc.tokens.filter((t) => dieOf(t) && inside(rr, center(t).cx, center(t).cy)); };
   const countIn = (d) => diceIn(d).length;
   const ordered = [...areas].sort((a, b) => a.y - b.y || a.x - b.x);
-  const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
+  const ownerOf = (d) => d.getFlag("magicalogia", "owner") || null;
   const picked = areaId ? ordered.find((d) => d.id === areaId) : null;
-  const zd = picked ?? mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
+  const assigned = ordered.find((d) => ownerOf(d) === owner);                       // 1) 내 칸으로 배정된 곳
+  const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner)); // 2) 이미 내 주사위가 있는 곳
+  const freeAreas = ordered.filter((d) => !ownerOf(d));                              // 3) 아무에게도 배정되지 않은 칸 중 가장 빈 곳
+  const pool = freeAreas.length ? freeAreas : ordered;
+  const zd = picked ?? assigned ?? mine ?? pool.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
   const size = DIE_SIZE; // 이미지 원본 크기(70px) 그대로
   const { x, y } = freeSlot(sc, zd);
   const actor = await ensureDiceActor();
@@ -293,3 +297,22 @@ Hooks.on("dropCanvasData", (cv, data) => {
   addDie({ zone: best.key, kind: data.kind, face: data.face ?? null, areaId: best.zd.id });
   return false;
 });
+
+/** 입회 칸 목록 (배정 UI 용) */
+export function observerAreas(sc = scene()) {
+  const out = [];
+  for (const side of ["A", "B"]) {
+    (getZones(sc)[`${side}_observer`] ?? []).sort((a, b) => a.y - b.y || a.x - b.x)
+      .forEach((d, i) => out.push({ id: d.id, side, label: `${side} 입회 ${i + 1}`, owner: d.getFlag("magicalogia", "owner") || "" }));
+  }
+  return out;
+}
+
+/** GM: 입회 칸을 한 사람에게 배정 (빈 문자열이면 해제). 칸 이름표도 같이 바꾼다. */
+export async function assignObserver(areaId, userId) {
+  if (!game.user.isGM) return;
+  const sc = scene(); const d = sc?.drawings.get(areaId); if (!d) return;
+  const side = d.getFlag("magicalogia", "zone")?.[0] ?? "";
+  const name = userId ? (game.users.get(userId)?.name ?? "") : "";
+  await d.update({ "flags.magicalogia.owner": userId || null, text: name ? `${side} 입회 · ${name}` : `${side} 입회` });
+}

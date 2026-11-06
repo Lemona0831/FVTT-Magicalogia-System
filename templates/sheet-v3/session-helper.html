@@ -30,6 +30,19 @@
       <button type="button" class="mglg-plot-make">구역 만들기</button>
       <button type="button" class="mglg-plot-unmake">구역 지우기</button>
     </div>
+    {{#if observers.length}}
+    <h3 style="margin-top:10px">입회 칸 배정</h3>
+    {{#each observers}}
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">{{label}}</span>
+      <select class="mglg-plot-assign" data-id="{{id}}">
+        <option value="" {{#if auto}}selected{{/if}}>자동</option>
+        {{#each users}}<option value="{{id}}" {{#if sel}}selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+    </div>
+    {{/each}}
+    <p class="mglg-sess-hint">배정하면 그 사람이 놓는 입회 주사위는 항상 그 칸으로 갑니다. '자동'은 비어 있는 칸에 차례로 놓입니다.</p>
+    {{/if}}
     <div class="mglg-sess-row"><button type="button" class="mglg-plot-reveal on">주사위 공개 (뒷면 → 앞면)</button></div>
     <div class="mglg-sess-row">
       <button type="button" class="mglg-plot-resolve" data-side="A">A 공격 비교</button>
