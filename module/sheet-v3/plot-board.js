@@ -109,15 +109,18 @@ export function addDie({ zone, kind, face = null, areaId = null }) {
 
 /** 구역 안에서 비어 있는 첫 칸 위치 (다른 주사위와 겹치지 않는 곳) */
 function freeSlot(sc, zd, excludeId = null) {
-  const pad = 8, size = DIE_SIZE, r = zoneRect(zd);
-  const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));
+  // 구역을 그리드 칸(한 칸 = 그리드 크기, 70px 보다 작으면 70px)으로 나눠 위→아래, 왼→오른 순으로 채운다.
+  // 칸 안에서 주사위는 가운데에 둔다 → 맵 그림의 칸 표시(육각형 등)와 구역 왼쪽 위 모서리를 맞춰 두면 딱 맞는다.
+  const size = DIE_SIZE, g = sc.grid.size || 100, cell = Math.max(g, size), r = zoneRect(zd);
+  const cols = Math.max(1, Math.floor(r.w / cell));
+  const off = (cell - size) / 2;
   const others = sc.tokens.filter((t) => dieOf(t) && t.id !== excludeId);
   for (let idx = 0; idx < 200; idx++) {
-    const x = r.x + pad + (idx % cols) * (size + pad);
-    const y = r.y + 40 + Math.floor(idx / cols) * (size + pad);
+    const x = r.x + (idx % cols) * cell + off;
+    const y = r.y + Math.floor(idx / cols) * cell + off;
     if (!others.some((t) => Math.abs(t.x - x) < size * 0.6 && Math.abs(t.y - y) < size * 0.6)) return { x, y };
   }
-  return { x: r.x + pad, y: r.y + 40 };
+  return { x: r.x + off, y: r.y + off };
 }
 
 async function gmAddDie({ zone, kind, face, owner, sceneId, areaId }) {
