@@ -134,6 +134,7 @@
       <div class="mglg-two">
         <section class="mglg-card">
           <div class="mglg-card-head"><h2>장서</h2><span class="mglg-note">코스트가 맞는 장서에 마소 충전</span><span class="mglg-grow"></span><span class="mglg-note">{{v3.abilities.length}}권</span>
+            <button type="button" class="mglg-btn mglg-slip-all" title="모든 장서의 토큰을 맵에 놓습니다 (이미 있는 것은 건너뜀)">장서 토큰</button>
             <button type="button" class="mglg-btn mglg-item-create" data-type="ability" data-img="book" title="빈 장서를 추가합니다">+ 추가</button></div>
           <div class="mglg-list">
             {{#each v3.abilities}}
@@ -149,7 +150,7 @@
                 <button type="button" class="mglg-mini mglg-charge" data-item-id="{{id}}" data-add="1" title="충전 1 증가" aria-label="충전 증가">+</button>
               </div>
               <button type="button" class="mglg-check mglg-word {{#if wordUsed}}on{{/if}}" data-item-id="{{id}}" aria-pressed="{{wordUsed}}" aria-label="주구" title="주구 사용 (누르면 채팅에 주구가 올라갑니다)"></button>
-              <span class="mglg-row-tools"><a class="mglg-slip" data-item-id="{{id}}" title="맵에 전표(코스트 그림)를 놓습니다"><i class="fas fa-map-pin"></i></a> <a class="mglg-item-edit" data-item-id="{{id}}" title="장서 편집"><i class="fas fa-edit"></i></a> <a class="mglg-item-delete" data-item-id="{{id}}" title="장서 삭제"><i class="fas fa-trash"></i></a></span>
+              <span class="mglg-row-tools"><a class="mglg-slip" data-item-id="{{id}}" title="이 장서의 토큰을 맵에 놓습니다"><i class="fas fa-map-pin"></i></a> <a class="mglg-item-edit" data-item-id="{{id}}" title="장서 편집"><i class="fas fa-edit"></i></a> <a class="mglg-item-delete" data-item-id="{{id}}" title="장서 삭제"><i class="fas fa-trash"></i></a></span>
             </div>
             {{else}}<p class="mglg-note">장서가 없습니다.</p>{{/each}}
           </div>
