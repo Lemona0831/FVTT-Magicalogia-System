@@ -9,6 +9,7 @@
 import { resolveClash } from "./plot-logic.js";
 import { escapeHTML } from "./escape.js";
 import { gmSummon } from "./archetype.js";
+import { gmSlip } from "./slip.js";
 
 const IMG = "systems/magicalogia/assets/plot/dice";
 // 구역은 고정: A = 플레이어 쪽, B = 에너미(마스터) 쪽. 선공/후공은 라운드마다 달라지므로 구역과 별개로 지정한다.
@@ -348,6 +349,7 @@ export function initBoard() {
     if (d.op === "add") gmAddDie(d);
     else if (d.op === "clearMine") clearDice(d.owner, d.sceneId);
     else if (d.op === "summon") gmSummon(d);
+    else if (d.op === "slip") gmSlip(d);
   });
 }
 

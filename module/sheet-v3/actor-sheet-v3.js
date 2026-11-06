@@ -1,4 +1,5 @@
 import { escapeHTML } from "./escape.js";
+import { spawnSlip } from "./slip.js";
 import { rollTalentCard } from "./roll-card.js";
 import { tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
@@ -211,6 +212,10 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
     html.find(".mglg-status").on("click", this._onToggleStatus.bind(this));
     html.find(".mglg-step").on("click", this._onStep.bind(this));
     html.find(".mglg-charge").on("click", this._onCharge.bind(this));
+    html.find(".mglg-slip").on("click", (ev) => {
+      const it = this.actor.items.get(ev.currentTarget.dataset.itemId); if (!it) return;
+      spawnSlip({ name: it.name, type: it.system.type ?? "", cost: it.system.cost ?? "" });
+    });
     html.find(".mglg-word").on("click", this._onWord.bind(this));
     html.find(".mglg-item-create").on("click", this._onItemCreate.bind(this));
     html.find(".mglg-item-delete").on("click", this._onItemDelete.bind(this));

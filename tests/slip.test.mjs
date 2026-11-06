@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { parseCost, slipImage } from "../module/sheet-v3/slip.js";
+assert.deepEqual(parseCost("별 2 어둠 x").map((p) => [p.img, p.n]), [["Star", 2], ["Darkness", null]]);
+assert.deepEqual(parseCost("전 x").map((p) => [p.img, p.n]), [["All", null]]);
+assert.deepEqual(parseCost("전체3").map((p) => [p.realm, p.n]), [["전체", 3]]);
+assert.deepEqual(parseCost("없음"), []);
+assert.deepEqual(parseCost(""), []);
+assert.ok(slipImage({ img: "Star", n: 3 }).endsWith("Star-03.png"));
+assert.ok(slipImage({ img: "Star", n: null }).endsWith("Star-0.png"));
+console.log("slip ok");
