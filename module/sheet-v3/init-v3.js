@@ -41,8 +41,8 @@ Hooks.once("init", () => {
   });
   // 세션 도우미 상태 (장면 종류, 적용 중인 세계 법칙). 쓰기는 GM 만.
   game.settings.register("magicalogia", "v3Session", {
-    scope: "world", config: false, type: Object, default: { sceneType: "drama", laws: [] },
-    onChange: () => refreshSessionHelper()
+    scope: "world", config: false, type: Object, default: { sceneType: "drama", laws: [], scenario: "" },
+    onChange: () => { refreshSessionHelper(); Object.values(ui.windows).filter((w) => w instanceof MagicalogiaActorSheetV3).forEach((w) => w.render()); }
   });
   game.settings.registerMenu("magicalogia", "v3TablesMenu", {
     name: "시트 v3 · 각종 표 구성",
@@ -119,9 +119,8 @@ Hooks.on("chatMessage", (log, message) => {
   return false;
 });
 
-for (const h of ["canvasReady", "createDrawing", "deleteDrawing", "updateDrawing", "updateScene", "createJournalEntry", "updateJournalEntry", "deleteJournalEntry"]) Hooks.on(h, () => refreshSessionHelper());
+for (const h of ["canvasReady", "createDrawing", "deleteDrawing", "updateDrawing", "updateScene", "createJournalEntry", "updateJournalEntry", "deleteJournalEntry", "createFolder", "updateFolder", "deleteFolder"]) Hooks.on(h, () => refreshSessionHelper());
 // 핸드아웃(저널)이 바뀌면 열린 캐릭터 시트의 핸드아웃 탭도 갱신
-for (const h of ["createJournalEntry", "updateJournalEntry", "deleteJournalEntry"]) Hooks.on(h, (doc) => {
-  if (!doc.getFlag?.("magicalogia", "handout") && !doc.getFlag?.("magicalogia", "handoutSecret")) return;
+for (const h of ["createJournalEntry", "updateJournalEntry", "deleteJournalEntry", "createFolder", "updateFolder", "deleteFolder"]) Hooks.on(h, () => {
   Object.values(ui.windows).filter((w) => w instanceof MagicalogiaActorSheetV3).forEach((w) => w.render());
 });

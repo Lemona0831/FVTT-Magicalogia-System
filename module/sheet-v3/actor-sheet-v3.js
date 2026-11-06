@@ -166,7 +166,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
         })),
         ...byType("item").map((i) => ({ id: i.id, kind: "아이템", name: i.name, system: i.system, isItem: true, qty: num(i.system.quantity, 1) }))
       ],
-      hoList: await sheetRows(this._hoSel),
+      hoGroups: await sheetRows(this._hoSel),
       handouts: byType("handout")
         .filter((i) => game.user.isGM || (i.system.visible instanceof Object && i.system.visible[game.user.id]))
         .map((i) => ({

@@ -13,12 +13,25 @@
   {{#if isGM}}
   <div class="mglg-sess-gm">
   <section class="mglg-sess-box">
-    <h3>핸드아웃 <button type="button" class="mglg-ho-new mini on">+ 새 핸드아웃</button></h3>
-    <p class="mglg-sess-hint">공개 정보를 공개한 플레이어가 지정 특기로 조사해 성공하면, 그 사람에게 '비밀'을 공개하세요. 공개한 사람에게만 내용이 전달되고(저널 열람 권한), 공개하면 그 사람과 GM에게 채팅 알림이 갑니다.</p>
+    <h3>시나리오 <button type="button" class="mglg-ho-newscn mini">+ 새 시나리오</button></h3>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">지금 시나리오</span>
+      <select class="mglg-ho-scn" title="플레이어에게는 이 시나리오의 공개된 핸드아웃·에너미만 보입니다">
+        <option value="" {{#unless scenario}}selected{{/unless}}>(구분 없음 · 전부)</option>
+        {{#each scenarios}}<option value="{{id}}" {{#if on}}selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+    </div>
+    <div class="mglg-sess-row">
+      <button type="button" class="mglg-ho-new mini on">+ 새 핸드아웃</button>
+      <button type="button" class="mglg-ho-newenemy mini on">+ 새 에너미</button>
+    </div>
+    <p class="mglg-sess-hint">저널 폴더 '시나리오 / HO / ENEMY' 구조를 씁니다. 사이드바에서 직접 만든 HO·ENEMY 폴더도 인식하고, 그 안의 저널은 그대로 핸드아웃·에너미로 취급합니다(비밀 없이 공개 정보만). 공개한 사람에게만 이름과 내용이 전달되고(저널 열람 권한), 공개하면 그 사람과 GM에게 채팅 알림이 갑니다. 공개 정보를 공개한 플레이어가 지정 특기로 조사해 성공하면 그 사람에게 '비밀'을 공개하세요.</p>
   </section>
   </div>
   {{/if}}
-  {{#each handouts}}
+  {{#each hoGroups}}
+  <h3 class="mglg-ho-group">{{label}}</h3>
+  {{#each rows}}
   <section class="mglg-sess-box mglg-ho" data-id="{{id}}">
     <h3 class="mglg-ho-head" title="펼치기/접기">{{#if open}}▾{{else}}▸{{/if}} {{name}}{{#if hasSecret}} <span class="mglg-ho-lock">🔒</span>{{/if}}</h3>
     {{#if open}}
@@ -29,7 +42,7 @@
         {{#if @root.isGM}}
         <div class="mglg-sess-gm">
           <div class="mglg-ho-targets">
-            <button type="button" class="mglg-ho-all mini {{#if pubAll}}on{{/if}}" data-kind="pub" title="모든 플레이어에게 공개 정보 보이기/숨기기">모두</button>
+            <button type="button" class="mglg-ho-all mini {{#if pubAll}}on{{/if}}" data-kind="pub" title="모든 플레이어에게 보이기/숨기기">모두</button>
             {{#each pubUsers}}<button type="button" class="mglg-ho-toggle mini {{#if on}}on{{/if}}" data-kind="pub" data-user="{{id}}" title="{{#if on}}보이는 중 (누르면 숨김){{else}}숨김 (누르면 보임){{/if}}">{{name}}</button>{{/each}}
           </div>
           <button type="button" class="mglg-ho-edit mini" data-kind="pub">공개 정보 편집</button>
@@ -52,10 +65,12 @@
       </div>
       {{/if}}
     </div>
-    {{#if @root.isGM}}<div class="mglg-sess-gm"><div class="mglg-sess-row"><button type="button" class="mglg-ho-del mini">이 핸드아웃 삭제</button></div></div>{{/if}}
+    {{#if @root.isGM}}<div class="mglg-sess-gm"><div class="mglg-sess-row"><button type="button" class="mglg-ho-del mini">이 항목 삭제</button></div></div>{{/if}}
     {{/if}}
   </section>
-  {{else}}<p class="mglg-sess-empty">{{#if isGM}}핸드아웃이 없습니다. 위에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p>{{/each}}
+  {{else}}<p class="mglg-sess-empty">{{#if @root.isGM}}없습니다. 위에서 만드세요.{{else}}공개된 것이 없습니다.{{/if}}</p>{{/each}}
+  {{/each}}
+  {{#unless hoGroups.length}}<p class="mglg-sess-empty">공개된 핸드아웃·에너미 정보가 없습니다.</p>{{/unless}}
   {{/if}}
 
   {{#if tab.settle}}

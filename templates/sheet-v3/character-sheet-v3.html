@@ -227,9 +227,11 @@
       <section class="mglg-card">
         <div class="mglg-card-head"><h2>핸드아웃</h2><span class="mglg-note">{{#if v3.isGM}}핸드아웃은 세션 도우미에서 만들고 공개합니다{{else}}GM이 나에게 공개한 핸드아웃만 보입니다{{/if}}</span><span class="mglg-grow"></span>
           {{#if v3.isGM}}<button type="button" class="mglg-btn mglg-ho-open" title="세션 도우미의 핸드아웃 탭을 엽니다">핸드아웃 관리</button>{{/if}}</div>
-        {{#if v3.hoList.length}}
+        {{#if v3.hoGroups.length}}
+        {{#each v3.hoGroups}}
+        <div class="mglg-ho-group">{{label}}</div>
         <div class="mglg-ho3-list">
-          {{#each v3.hoList}}
+          {{#each rows}}
           <div class="mglg-ho3 {{#if on}}open{{/if}}">
             <button type="button" class="mglg-ho-pick {{#if on}}on{{/if}}" data-id="{{id}}" aria-expanded="{{on}}">
               <span class="mglg-ho3-name">{{name}}</span>
@@ -254,6 +256,7 @@
           </div>
           {{/each}}
         </div>
+        {{/each}}
         {{else}}<p class="mglg-note">{{#if v3.isGM}}핸드아웃이 없습니다. '핸드아웃 관리'에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p>{{/if}}
       </section>
       {{#if v3.handouts.length}}

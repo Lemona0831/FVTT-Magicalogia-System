@@ -12,7 +12,7 @@ import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice
 import { loadBuiltin, tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
 import { resolveTheme } from "./actor-sheet-v3.js";
-import { visibleHandouts, journalHTML, info as hoInfo, secretOf, isShown, shownToAll, createHandout, setShown, setShownAll, removeHandout } from "./handout.js";
+import { KINDS, visibleItems, scenarios, currentScenario, journalHTML, info as hoInfo, secretOf, isShown, shownToAll, createHandout, createEnemy, createScenario, setShown, setShownAll, removeHandout } from "./handout.js";
 import { MISSION, calcMerit, prefill, breakdown, settleActors, applyMerit } from "./settle.js";
 
 export const SCENE_TYPES = [
@@ -25,7 +25,7 @@ export const PHASES = [
   { id: "main", label: "메인", main: true },
   { id: "climax", label: "클라이맥스" }
 ];
-const DEFAULT_STATE = { sceneType: "drama", phase: "intro", cycle: 1, laws: [] };
+const DEFAULT_STATE = { sceneType: "drama", phase: "intro", cycle: 1, laws: [], scenario: "" };
 const LAW_TABLE = "세계 법칙 (일람)";
 
 export function getSessionState() {
@@ -95,20 +95,26 @@ export class SessionHelper extends Application {
   }
 
   async _handoutRows() {
-    const players = game.users.filter((u) => !u.isGM);
-    return Promise.all(visibleHandouts().map(async (j) => {
-      const f = hoInfo(j), s = secretOf(j), gm = game.user.isGM;
-      const open = this._hoOpen?.has(j.id) ?? !gm;
-      return {
-        id: j.id, name: j.name, open, talent: f.talent, hasSecret: !!f.secretId,
-        html: open ? await journalHTML(j) : "",
-        secretShown: !!s && open, secretHtml: s && open ? await journalHTML(s) : "",
-        secretLocked: !!f.secretId && !s,
-        pubAll: shownToAll(j), secAll: shownToAll(s),
-        pubUsers: players.map((u) => ({ id: u.id, name: u.name, on: isShown(j, u) })),
-        secUsers: s ? players.map((u) => ({ id: u.id, name: u.name, on: isShown(s, u) })) : []
-      };
-    }));
+    const players = game.users.filter((u) => !u.isGM), gm = game.user.isGM;
+    const out = [];
+    for (const k of KINDS) {
+      const items = visibleItems(k.kind);
+      if (!items.length && !gm) continue;
+      const rows = await Promise.all(items.map(async (j) => {
+        const f = hoInfo(j), sj = secretOf(j);
+        const open = this._hoOpen?.has(j.id) ?? !gm;
+        return {
+          id: j.id, name: j.name, open, talent: f.talent, hasSecret: !!f.secretId,
+          html: open ? await journalHTML(j) : "",
+          secretShown: !!sj && open, secretHtml: sj && open ? await journalHTML(sj) : "",
+          pubAll: shownToAll(j), secAll: shownToAll(sj),
+          pubUsers: players.map((u) => ({ id: u.id, name: u.name, on: isShown(j, u) })),
+          secUsers: sj ? players.map((u) => ({ id: u.id, name: u.name, on: isShown(sj, u) })) : []
+        };
+      }));
+      out.push({ kind: k.kind, label: k.label, rows });
+    }
+    return out;
   }
 
   async getData() {
@@ -123,7 +129,9 @@ export class SessionHelper extends Application {
     return {
       tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", arch: tab === "arch", gm: tab === "gm", settle: tab === "settle", handout: tab === "handout" },
       settle: tab === "settle" ? this._settleRows() : [],
-      handouts: tab === "handout" ? await this._handoutRows() : [],
+      hoGroups: tab === "handout" ? await this._handoutRows() : [],
+      scenarios: tab === "handout" ? scenarios().map((f) => ({ id: f.id, name: f.name, on: f.id === currentScenario() })) : [],
+      scenario: currentScenario(),
       skills: tab === "arch" ? Array.from({ length: 6 }, (_, r) => ({ realm: realmName(r), items: Array.from({ length: 11 }, (_, row) => ({ no: row + 2, name: talentName(r, row) })) })) : [],
       types: tab === "arch" ? await Promise.all(TYPES.map(async (t) => ({ name: t.name, base: effectsToString(parseEffects(await baseEffects(t.name))) }))) : [],
       zones: placeTargets(), myRole: myRole(), firstA: getFirst() === "A", firstB: getFirst() === "B", firstSide: getFirst(), secondSide: getFirst() === "A" ? "B" : "A", firstName: SIDE[getFirst()], secondName: SIDE[getFirst() === "A" ? "B" : "A"], delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
@@ -223,8 +231,32 @@ export class SessionHelper extends Application {
         callback: (h) => ({ title: String(h.find("[name=t]").val() ?? "").trim(), pub: h.find("[name=p]").val(), talent: h.find("[name=k]").val(), secret: h.find("[name=s]").val() })
       });
       if (!r) return;
-      await createHandout(r); this.render();
+      await createHandout({ ...r, scenarioId: currentScenario() }); this.render();
     }));
+    html.find(".mglg-ho-newenemy").on("click", gmOnly(async () => {
+      const r = await Dialog.prompt({
+        title: "새 에너미 정보", rejectClose: false, label: "만들기",
+        content: `<form>
+          <div class="form-group"><label>이름</label><input type="text" name="t" placeholder="예: 폐교의 그림자"></div>
+          <div class="form-group"><label>공개 정보</label><textarea name="p" rows="6" style="width:100%" placeholder="플레이어에게 보여 줄 에너미 데이터"></textarea></div>
+          <p class="notes">공개용 데이터입니다. 공개하기 전에는 GM 만 볼 수 있습니다. 표·이미지는 만든 뒤 '편집'에서 넣을 수 있습니다.</p></form>`,
+        callback: (h) => ({ title: String(h.find("[name=t]").val() ?? "").trim(), pub: h.find("[name=p]").val() })
+      });
+      if (!r) return;
+      await createEnemy({ ...r, scenarioId: currentScenario() }); this.render();
+    }));
+    html.find(".mglg-ho-newscn").on("click", gmOnly(async () => {
+      const name = await Dialog.prompt({
+        title: "새 시나리오", rejectClose: false, label: "만들기",
+        content: `<form><div class="form-group"><label>시나리오 제목</label><input type="text" name="t"></div><p class="notes">저널 폴더 '제목' 아래에 HO, ENEMY 폴더를 만들고, 지금 시나리오로 정합니다.</p></form>`,
+        callback: (h) => String(h.find("[name=t]").val() ?? "").trim()
+      });
+      if (!name) return;
+      const f = await createScenario(name);
+      if (f) await saveState({ ...getSessionState(), scenario: f.id });
+      this.render();
+    }));
+    html.find(".mglg-ho-scn").on("change", gmOnly(async (ev) => { await saveState({ ...getSessionState(), scenario: ev.currentTarget.value }); }));
     const hoOf = (el) => game.journal.get($(el).closest(".mglg-ho").data("id"));
     html.find(".mglg-ho-toggle").on("click", gmOnly(async (ev) => {
       const el = ev.currentTarget, j = hoOf(el), u = game.users.get(el.dataset.user); if (!j || !u) return;
@@ -246,7 +278,7 @@ export class SessionHelper extends Application {
     }));
     html.find(".mglg-ho-head").on("click", (ev) => {
       const id = $(ev.currentTarget).closest(".mglg-ho").data("id");
-      this._hoOpen ??= new Set(game.user.isGM ? [] : visibleHandouts().map((j) => j.id));
+      this._hoOpen ??= new Set(game.user.isGM ? [] : KINDS.flatMap((k) => visibleItems(k.kind)).map((j) => j.id));
       this._hoOpen.has(id) ? this._hoOpen.delete(id) : this._hoOpen.add(id);
       this.render();
     });
