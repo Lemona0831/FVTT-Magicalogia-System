@@ -2,6 +2,7 @@ import { MagicalogiaActorSheetV3 } from "./actor-sheet-v3.js";
 import { TablesConfigApp } from "./tables.js";
 import { openSessionHelper, refreshSessionHelper } from "./session-helper.js";
 import { initBoard } from "./plot-board.js";
+import { initTracker } from "./tracker.js";
 
 export const THEMES = ["rulebook", "academy", "summer", "urban"];
 
@@ -27,6 +28,8 @@ Hooks.once("init", () => {
     choices: { inherit: "기본값 따름", rulebook: "룰북 편집", academy: "학원 도시", summer: "여름 청춘", urban: "어반 판타지" },
     onChange: () => Object.values(ui.windows).filter((w) => w instanceof MagicalogiaActorSheetV3).forEach((w) => w.render())
   });
+
+  initTracker();
 
   // 시트의 "각종 표" 구성 (GM). null = 기본 목록
   game.settings.register("magicalogia", "v3Tables", {
