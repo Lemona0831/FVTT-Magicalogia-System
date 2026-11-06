@@ -445,6 +445,13 @@
 .mglg-sess-custom { margin-top: 8px; font-size: 12px; }
 .mglg-sess-custom input, .mglg-sess-custom textarea { width: 100%; margin: 4px 0; box-sizing: border-box; }
 .mglg-sess-who { font-size: 13px; }
+/* 세션 상태 띠: 작고 반투명, 마우스를 올릴 때만 또렷하게 */
+#mglg-session-strip { position: fixed; top: 6px; right: 330px; z-index: 60; display: flex; align-items: center; gap: 6px;
+  padding: 2px 6px 2px 12px; font: 700 12px/20px "Gothic A1","Malgun Gothic",sans-serif; color: #2a2352; background: #fff7d6;
+  border: 2px solid #2a2352; border-radius: 99px; box-shadow: 2px 2px 0 #2a2352; opacity: .55; cursor: pointer; user-select: none; touch-action: none; transition: opacity .15s; }
+#mglg-session-strip:hover { opacity: 1; }
+#mglg-session-strip[hidden] { display: none; }
+#mglg-session-strip .mglg-strip-x { border: 0; background: none; color: #2a2352; cursor: pointer; padding: 0 4px; font-size: 11px; line-height: 20px; }
 /* 가독성 고정: 코어/다른 모듈 CSS 에 색·폭이 덮이지 않게 */
 .mglg-sess, .mglg-sess * { color: var(--ink) !important; text-shadow: none !important; }
 .mglg-sess .mglg-sess-badge { color: #2a2352 !important; }
