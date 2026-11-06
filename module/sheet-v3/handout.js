@@ -27,6 +27,20 @@ export async function journalHTML(j) {
   return TextEditor.enrichHTML(html, { async: true });
 }
 
+/** 시트용 목록: GM 은 제목만(내용은 세션 도우미 탭에서), 플레이어는 공개된 내용 */
+export async function sheetRows() {
+  const gm = game.user.isGM;
+  return Promise.all(visibleHandouts().map(async (j) => {
+    const f = info(j), s = secretOf(j);
+    return {
+      id: j.id, name: j.name, talent: f.talent, hasSecret: !!f.secretId,
+      html: gm ? "" : await journalHTML(j),
+      secretShown: !gm && !!s, secretHtml: !gm && s ? await journalHTML(s) : "",
+      secretLocked: !gm && !!f.secretId && !s
+    };
+  }));
+}
+
 export const isShown = (j, user) => !!j && j.testUserPermission(user, "OBSERVER");
 export const shownToAll = (j) => !!j && j.ownership?.default >= OBS();
 

@@ -1,5 +1,6 @@
 import { escapeHTML } from "./escape.js";
 import { spawnSlips } from "./slip.js";
+import { sheetRows } from "./handout.js";
 import { rollTalentCard } from "./roll-card.js";
 import { tableOptions, rollConfigured } from "./tables.js";
 import { openResistDialog } from "./resist.js";
@@ -165,6 +166,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
         })),
         ...byType("item").map((i) => ({ id: i.id, kind: "아이템", name: i.name, system: i.system, isItem: true, qty: num(i.system.quantity, 1) }))
       ],
+      hoRows: await sheetRows(),
       handouts: byType("handout")
         .filter((i) => game.user.isGM || (i.system.visible instanceof Object && i.system.visible[game.user.id]))
         .map((i) => ({
@@ -212,6 +214,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
     html.find(".mglg-status").on("click", this._onToggleStatus.bind(this));
     html.find(".mglg-step").on("click", this._onStep.bind(this));
     html.find(".mglg-charge").on("click", this._onCharge.bind(this));
+    html.find(".mglg-ho-open").on("click", () => game.magicalogia?.openSession?.("handout"));
     html.find(".mglg-slip").on("click", (ev) => {
       spawnSlips([{ actorId: this.actor.id, itemId: ev.currentTarget.dataset.itemId }]);
     });

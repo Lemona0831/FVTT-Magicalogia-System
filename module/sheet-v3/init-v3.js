@@ -91,8 +91,8 @@ Hooks.on("renderChatMessage", (message, html) => {
 
 // 세션 도우미: 장면 컨트롤 버튼 (모든 사용자) + 콘솔/매크로용 game.magicalogia.openSession()
 // 어떤 경로로든 열리게: 컨트롤 버튼, 단축키(기본 Alt+S), 채팅 명령(/세션, /session), 콘솔
-const safeOpen = () => {
-  try { return openSessionHelper(); }
+const safeOpen = (tab) => {
+  try { return openSessionHelper(typeof tab === "string" ? tab : undefined); }
   catch (e) { console.error("magicalogia | 세션 도우미를 열지 못했습니다", e); ui.notifications.error("세션 도우미를 열지 못했습니다. 콘솔(F12)을 확인하세요."); }
 };
 Hooks.once("ready", () => {
@@ -120,3 +120,8 @@ Hooks.on("chatMessage", (log, message) => {
 });
 
 for (const h of ["canvasReady", "createDrawing", "deleteDrawing", "updateDrawing", "updateScene", "createJournalEntry", "updateJournalEntry", "deleteJournalEntry"]) Hooks.on(h, () => refreshSessionHelper());
+// 핸드아웃(저널)이 바뀌면 열린 캐릭터 시트의 핸드아웃 탭도 갱신
+for (const h of ["createJournalEntry", "updateJournalEntry", "deleteJournalEntry"]) Hooks.on(h, (doc) => {
+  if (!doc.getFlag?.("magicalogia", "handout") && !doc.getFlag?.("magicalogia", "handoutSecret")) return;
+  Object.values(ui.windows).filter((w) => w instanceof MagicalogiaActorSheetV3).forEach((w) => w.render());
+});

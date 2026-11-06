@@ -3,7 +3,8 @@
 
   <nav class="mglg-tabs tabs" data-group="primary" aria-label="시트 메뉴">
     <a class="item" data-tab="sheet" title="판정과 현재 상태를 보는 화면">시트</a>
-    <a class="item" data-tab="profile" title="신조, 신상, 공적점 획득 조건, 메모, 비밀">설정 · 공적점</a>
+    <a class="item" data-tab="profile" title="신조, 신상, 공적점 획득 조건, 메모">설정 · 공적점</a>
+    <a class="item" data-tab="handout" title="GM이 나에게 공개한 핸드아웃과 조사로 드러난 비밀">핸드아웃</a>
     <span class="mglg-grow"></span>
     <select class="mglg-theme-select" aria-label="테마" title="이 시트의 테마를 바꿉니다 (내 화면에만 적용)">
       {{#each v3.themes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
@@ -219,10 +220,27 @@
         <div class="mglg-card-head"><h2>메모</h2></div>
         {{editor enrichedBiography target="system.details.biography" button=true editable=v3.editable}}
       </section>
+    </div>
 
+    {{!-- ===================== 핸드아웃 탭 ===================== --}}
+    <div class="tab" data-group="primary" data-tab="handout">
       <section class="mglg-card">
-        <div class="mglg-card-head"><h2>비밀</h2><span class="mglg-note">GM이 나에게 공개한 핸드아웃만 보입니다</span><span class="mglg-grow"></span>
-          <button type="button" class="mglg-btn mglg-item-create" data-type="handout" data-img="card-hand" title="핸드아웃을 추가합니다">+ 추가</button></div>
+        <div class="mglg-card-head"><h2>핸드아웃</h2><span class="mglg-note">{{#if v3.isGM}}핸드아웃은 세션 도우미에서 만들고 공개합니다{{else}}GM이 나에게 공개한 핸드아웃만 보입니다{{/if}}</span><span class="mglg-grow"></span>
+          {{#if v3.isGM}}<button type="button" class="mglg-btn mglg-ho-open" title="세션 도우미의 핸드아웃 탭을 엽니다">핸드아웃 관리</button>{{/if}}</div>
+        <div class="mglg-list">
+          {{#each v3.hoRows}}
+          <div class="mglg-hand">
+            <div class="mglg-line"><b>{{name}}</b>{{#if hasSecret}} <span class="mglg-note">🔒{{#if talent}} 조사 특기: {{talent}}{{/if}}</span>{{/if}}</div>
+            {{#if html}}<div class="mglg-hand-body">{{{html}}}</div>{{/if}}
+            {{#if secretShown}}<hr><div class="mglg-hand-body">{{{secretHtml}}}</div>{{else}}{{#if secretLocked}}<p class="mglg-note">🔒 비밀은 아직 밝혀지지 않았습니다{{#if talent}} — {{talent}} (으)로 조사하세요{{/if}}.</p>{{/if}}{{/if}}
+          </div>
+          {{/each}}
+          {{#unless v3.hoRows.length}}<p class="mglg-note">{{#if v3.isGM}}핸드아웃이 없습니다. '핸드아웃 관리'에서 만드세요.{{else}}공개된 핸드아웃이 없습니다.{{/if}}</p>{{/unless}}
+        </div>
+      </section>
+      {{#if v3.handouts.length}}
+      <section class="mglg-card">
+        <div class="mglg-card-head"><h2>예전 핸드아웃</h2><span class="mglg-note">이전 방식으로 만든 것 (새로 만들 수는 없습니다)</span></div>
         <div class="mglg-list">
           {{#each v3.handouts}}
           <div class="mglg-hand">
@@ -230,9 +248,10 @@
             <div class="mglg-hand-body">{{{description}}}</div>
             {{#if secret}}<hr><div class="mglg-hand-body">{{{secret}}}</div>{{/if}}
           </div>
-          {{else}}<p class="mglg-note">보이는 핸드아웃이 없습니다.</p>{{/each}}
+          {{/each}}
         </div>
       </section>
+      {{/if}}
     </div>
   </section>
 </form>

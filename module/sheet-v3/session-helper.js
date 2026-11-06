@@ -319,8 +319,9 @@ export class SessionHelper extends Application {
 }
 
 let _win = null;
-export function openSessionHelper() {
+export function openSessionHelper(tab) {
   if (!_win) _win = new SessionHelper();
+  if (typeof tab === "string") _win._tab = tab;
   _win.render(true);
   return _win;
 }
