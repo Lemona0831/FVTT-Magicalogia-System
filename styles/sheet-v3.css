@@ -267,6 +267,17 @@
 }
 @media (prefers-reduced-motion: reduce) { .mglg-sheet * { transition: none !important; animation: none !important; } }
 
+/* ---------- 가독성 고정: 코어/다른 모듈 CSS 가 글자색을 덮어써도 테마 색을 쓰도록 ---------- */
+.mglg-sheet .mglg-root h1, .mglg-sheet .mglg-root h2, .mglg-sheet .mglg-root h3 { color: var(--ink) !important; }
+.mglg-sheet .mglg-root .mglg-name { color: var(--ink) !important; }
+.mglg-sheet .mglg-root input::placeholder, .mglg-sheet .mglg-root textarea::placeholder { color: var(--sub) !important; opacity: 0.75 !important; }
+.mglg-sheet .mglg-root td.mglg-cell:not(.acquired) .mglg-cell-name { color: var(--ink) !important; }
+.mglg-sheet .mglg-root td.mglg-cell.acquired .mglg-cell-name { color: var(--acq-ink) !important; }
+.mglg-sheet .mglg-root .mglg-label, .mglg-sheet .mglg-root .mglg-note, .mglg-sheet .mglg-root .mglg-meta { color: var(--sub) !important; }
+.mglg-sheet .mglg-root .mglg-eyebrow { color: var(--eyebrow-ink) !important; }
+.mglg-sheet .mglg-root .mglg-realm { color: var(--head-ink) !important; }
+.mglg-sheet .mglg-root .mglg-realm.own { color: var(--own-head-ink) !important; }
+
 /* ---------- 채팅 카드 (v3 판정) : 팝 스티커 ---------- */
 .mglg-card { --ink:#2a2352; --paper:#fff7d6; --star:#ff6fa8; --spark:#37c6e0; --pip:var(--ink); --tot:#ff4f93;
   --ok:#7ee3a8; --ng:#c9c6e6; --sp:#ffd23f; --fb:#ff8a8a;
