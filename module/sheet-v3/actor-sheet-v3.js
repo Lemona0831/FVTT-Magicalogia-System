@@ -35,7 +35,7 @@ function talentLabel(key) {
   return title !== "" && title != null ? title : game.i18n.localize(key);
 }
 
-function resolveTheme() {
+export function resolveTheme() {
   let t = "inherit";
   try { t = game.settings.get("magicalogia", "v3Theme"); } catch (e) { /* 미등록 */ }
   if (t === "inherit" || !THEME_TEXT[t]) {

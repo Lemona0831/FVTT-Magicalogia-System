@@ -1,0 +1,54 @@
+<div class="mglg-sess theme-{{theme}}">
+  <section class="mglg-sess-box">
+    <h3>지금 장면</h3>
+    <div class="mglg-sess-badge">{{scene.label}}</div>
+    {{#if isGM}}
+    <div class="mglg-sess-row">
+      {{#each scene.types}}<button type="button" class="mglg-sess-scene {{#if on}}on{{/if}}" data-id="{{id}}">{{label}}</button>{{/each}}
+    </div>
+    {{/if}}
+  </section>
+
+  <section class="mglg-sess-box">
+    <h3>세계 법칙 {{#if isGM}}{{#if laws.length}}<button type="button" class="mglg-sess-law-clear mini" title="모두 지우기">모두 지우기</button>{{/if}}{{/if}}</h3>
+    {{#each laws}}
+    <div class="mglg-sess-law">
+      <div class="mglg-sess-law-name">{{name}}{{#if ../isGM}}<button type="button" class="mglg-sess-law-del mini" data-i="{{i}}" title="빼기">✕</button>{{/if}}</div>
+      {{#if text}}<div class="mglg-sess-law-text">{{text}}</div>{{/if}}
+    </div>
+    {{else}}<p class="mglg-sess-empty">적용 중인 세계 법칙이 없습니다.</p>{{/each}}
+    {{#if isGM}}
+    <div class="mglg-sess-row">
+      <select class="mglg-sess-law-pick">
+        <option value="">세계 법칙 고르기…</option>
+        {{#each lawOptions}}<option value="{{this}}">{{this}}</option>{{/each}}
+      </select>
+      <button type="button" class="mglg-sess-law-add">추가</button>
+    </div>
+    <details class="mglg-sess-custom">
+      <summary>직접 입력</summary>
+      <input type="text" class="mglg-sess-custom-name" placeholder="이름">
+      <textarea class="mglg-sess-custom-text" rows="2" placeholder="내용"></textarea>
+      <button type="button" class="mglg-sess-law-custom">추가</button>
+    </details>
+    {{/if}}
+  </section>
+
+  <section class="mglg-sess-box">
+    <h3>각종 표</h3>
+    <div class="mglg-sess-row">
+      <select class="mglg-sess-table">
+        {{#each tables}}<option value="{{value}}" {{#if missing}}disabled{{/if}}>{{name}}{{#if missing}} (없음){{/if}}</option>{{/each}}
+      </select>
+      <button type="button" class="mglg-sess-roll-table">굴리기</button>
+    </div>
+  </section>
+
+  <section class="mglg-sess-box">
+    <h3>저항 판정</h3>
+    <div class="mglg-sess-row">
+      <span class="mglg-sess-who">{{#if actorName}}{{actorName}}{{else}}내 캐릭터 없음{{/if}}</span>
+      <button type="button" class="mglg-sess-resist">저항 판정 열기</button>
+    </div>
+  </section>
+</div>

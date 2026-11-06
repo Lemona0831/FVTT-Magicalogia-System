@@ -1,5 +1,6 @@
 import { MagicalogiaActorSheetV3 } from "./actor-sheet-v3.js";
 import { TablesConfigApp } from "./tables.js";
+import { openSessionHelper, refreshSessionHelper } from "./session-helper.js";
 
 export const THEMES = ["rulebook", "academy", "summer", "urban"];
 
@@ -30,6 +31,11 @@ Hooks.once("init", () => {
   game.settings.register("magicalogia", "v3Tables", {
     scope: "world", config: false, type: Object, default: null,
     onChange: () => Object.values(ui.windows).filter((w) => w instanceof MagicalogiaActorSheetV3).forEach((w) => w.render())
+  });
+  // 세션 도우미 상태 (장면 종류, 적용 중인 세계 법칙). 쓰기는 GM 만.
+  game.settings.register("magicalogia", "v3Session", {
+    scope: "world", config: false, type: Object, default: { sceneType: "drama", laws: [] },
+    onChange: () => refreshSessionHelper()
   });
   game.settings.registerMenu("magicalogia", "v3TablesMenu", {
     name: "시트 v3 · 각종 표 구성",
@@ -74,4 +80,16 @@ Hooks.on("renderChatMessage", (message, html) => {
     card.classList.add("mglg-pop");
   });
   io.observe(card);
+});
+
+// 세션 도우미: 장면 컨트롤 버튼 (모든 사용자) + 콘솔/매크로용 game.magicalogia.openSession()
+Hooks.once("ready", () => {
+  game.magicalogia = game.magicalogia ?? {};
+  game.magicalogia.openSession = openSessionHelper;
+});
+Hooks.on("getSceneControlButtons", (controls) => {
+  controls[0]?.tools?.push({
+    name: "mglgSession", title: "세션 도우미", icon: "fas fa-wand-sparkles", button: true,
+    onClick: () => openSessionHelper()
+  });
 });
