@@ -28,14 +28,15 @@ const scene = () => canvas?.scene ?? game.scenes?.viewed ?? null;
 const dieOf = (t) => t.getFlag("magicalogia", "die");
 
 export function getZones(sc = scene()) {
+  // 같은 이름의 구역을 여러 개 둘 수 있다 (입회인마다 칸을 따로 까는 식). 키 → 드로잉 배열
   const map = {};
   for (const d of sc?.drawings?.contents ?? []) {
     const key = d.getFlag("magicalogia", "zone");
-    if (key) map[key] = d;
+    if (key) (map[key] ??= []).push(d);
   }
   return map;
 }
-export const hasZones = (sc = scene()) => ZONES.every((z) => getZones(sc)[z.key]);
+export const hasZones = (sc = scene()) => { const m = getZones(sc); return ZONES.every((z) => m[z.key]?.length); };
 
 const zoneRect = (d) => ({ x: d.x, y: d.y, w: d.shape.width, h: d.shape.height });
 const inside = (r, px, py) => px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
@@ -57,7 +58,7 @@ export async function createZones() {
     B_delegate: [cx + gap / 2, cy - H.delegate - gap / 2],
     B_observer: [cx + gap / 2, cy + gap / 2]
   };
-  const docs = ZONES.filter((z) => !have[z.key]).map((z) => ({
+  const docs = ZONES.filter((z) => !have[z.key]?.length).map((z) => ({
     x: Math.round(layout[z.key][0]), y: Math.round(layout[z.key][1]),
     shape: { type: "r", width: W, height: H[z.role] },
     fillType: 1, fillColor: z.color, fillAlpha: 0.18,
@@ -92,13 +93,17 @@ export function addDie({ zone, kind, face = null }) {
 
 async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   const sc = sceneId ? game.scenes.get(sceneId) : scene();
-  const zd = getZones(sc)[zone];
-  if (!sc || !zd) return;
+  const areas = getZones(sc)[zone];
+  if (!sc || !areas?.length) return;
   const g = sc.grid.size || 100;
-  const size = Math.round(g * 0.8), pad = 8;
+  const pad = 8;
+  // 구역이 여러 개면 주사위가 가장 적은 칸에 놓는다
+  const countIn = (d) => { const rr = zoneRect(d); return sc.tiles.filter((t) => dieOf(t) && inside(rr, t.x + t.width / 2, t.y + t.height / 2)).length; };
+  const zd = areas.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
   const r = zoneRect(zd);
+  const size = Math.max(24, Math.min(Math.round(g * 0.8), Math.round(r.w - pad * 2)));
   const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));
-  const idx = sc.tiles.filter((t) => dieOf(t)?.zone === zone).length;
+  const idx = countIn(zd);
   const x = r.x + pad + (idx % cols) * (size + pad);
   const y = r.y + 40 + Math.floor(idx / cols) * (size + pad);
   const [tile] = await sc.createEmbeddedDocuments("Tile", [{
@@ -150,12 +155,12 @@ export async function revealAll() {
 /** 구역별 눈 목록: 타일 중심이 들어간 구역, 없으면 놓았던 구역 플래그 */
 function collect(sc) {
   const zones = getZones(sc);
-  const rects = Object.fromEntries(Object.entries(zones).map(([k, d]) => [k, zoneRect(d)]));
+  const rects = Object.fromEntries(Object.entries(zones).map(([k, ds]) => [k, ds.map(zoneRect)]));
   const out = Object.fromEntries(ZONES.map((z) => [z.key, { faces: [], tiles: [], focus: false, focusTiles: [] }]));
   for (const t of sc.tiles) {
     const d = dieOf(t); if (!d) continue;
     const cx = t.x + t.width / 2, cy = t.y + t.height / 2;
-    const key = Object.keys(rects).find((k) => inside(rects[k], cx, cy)) ?? d.zone;
+    const key = Object.keys(rects).find((k) => rects[k].some((r) => inside(r, cx, cy))) ?? d.zone;
     if (!out[key]) continue;
     if (d.kind === "focus") { out[key].focus = true; out[key].focusTiles.push(t.id); }
     else { out[key].faces.push(d.face); out[key].tiles.push(t.id); }
