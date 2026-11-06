@@ -97,9 +97,12 @@ async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   if (!sc || !areas?.length) return;
   const g = sc.grid.size || 100;
   const pad = 8;
-  // 구역이 여러 개면 주사위가 가장 적은 칸에 놓는다
-  const countIn = (d) => { const rr = zoneRect(d); return sc.tiles.filter((t) => dieOf(t) && inside(rr, t.x + t.width / 2, t.y + t.height / 2)).length; };
-  const zd = areas.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
+  // 구역이 여러 개면 사람마다 자기 칸을 쓴다: 이미 내 주사위가 있는 칸 → 없으면 비어 있는 칸 → 없으면 가장 적은 칸
+  const diceIn = (d) => { const rr = zoneRect(d); return sc.tiles.filter((t) => dieOf(t) && inside(rr, t.x + t.width / 2, t.y + t.height / 2)); };
+  const countIn = (d) => diceIn(d).length;
+  const ordered = [...areas].sort((a, b) => a.y - b.y || a.x - b.x);
+  const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
+  const zd = mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
   const r = zoneRect(zd);
   const size = Math.max(24, Math.min(Math.round(g * 0.8), Math.round(r.w - pad * 2)));
   const cols = Math.max(1, Math.floor((r.w - pad) / (size + pad)));

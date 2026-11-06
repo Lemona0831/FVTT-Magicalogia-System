@@ -117,7 +117,6 @@ export class SessionHelper extends Application {
       const cycle = Math.max(1, (Number(st.cycle) || 1) + Number(ev.currentTarget.dataset.d));
       if (cycle === st.cycle) return;
       await saveState({ ...st, cycle });
-      say("사이클", `${cycle}사이클`);
     }));
 
     html.find(".mglg-sess-scene").on("click", gmOnly(async (ev) => {
