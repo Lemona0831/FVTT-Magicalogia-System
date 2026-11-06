@@ -3,6 +3,7 @@ import { TablesConfigApp } from "./tables.js";
 import { openSessionHelper, refreshSessionHelper } from "./session-helper.js";
 import { initBoard } from "./plot-board.js";
 import { initTracker } from "./tracker.js";
+import { freshen } from "./freshen.js";
 
 export const THEMES = ["rulebook", "academy", "summer", "urban"];
 
@@ -93,6 +94,7 @@ const safeOpen = () => {
   catch (e) { console.error("magicalogia | 세션 도우미를 열지 못했습니다", e); ui.notifications.error("세션 도우미를 열지 못했습니다. 콘솔(F12)을 확인하세요."); }
 };
 Hooks.once("ready", () => {
+  freshen();
   game.magicalogia = game.magicalogia ?? {};
   game.magicalogia.openSession = safeOpen;
   try { initBoard(); } catch (e) { console.warn("magicalogia | 플롯 보드 소켓 등록 실패", e); }
