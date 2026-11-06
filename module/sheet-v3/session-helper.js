@@ -1,5 +1,5 @@
 import { escapeHTML } from "./escape.js";
-import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver, getZones } from "./plot-board.js";
+import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver, getZones, getDelegate, setDelegate, myRole } from "./plot-board.js";
 /**
  * 세션 도우미 (GM · PL 공용).
  *  - 장면 종류(드라마/전투/클라이맥스)와 현재 세계 법칙: GM 이 정하고 모두에게 동기화 (월드 설정 v3Session, 쓰기는 GM 만).
@@ -55,7 +55,7 @@ function myActor() {
 function placeTargets() {
   const out = [];
   const zs = getZones();
-  for (const z of ZONES) {
+  for (const z of ZONES.filter((z) => z.side === "B")) {
     out.push({ key: `${z.key}|`, label: z.label + (zs[z.key]?.length > 1 ? " (자동)" : "") });
     const list = [...(zs[z.key] ?? [])].sort((a, b) => a.y - b.y || a.x - b.x);
     if (list.length > 1) list.forEach((d, i) => out.push({ key: `${z.key}|${d.id}`, label: `${z.label} ${i + 1}` }));
@@ -85,7 +85,7 @@ export class SessionHelper extends Application {
     const tab = this._tab ?? "status";
     return {
       tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", gm: tab === "gm" },
-      zones: placeTargets(), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
+      zones: placeTargets(), myRole: myRole(), delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
       observers: observerAreas().map((o) => ({ ...o, users: game.users.map((u) => ({ id: u.id, name: u.name, sel: u.id === o.owner })), auto: !o.owner })),
       theme: resolveTheme(),
       isGM: game.user.isGM,
@@ -105,7 +105,7 @@ export class SessionHelper extends Application {
 
     html.find(".mglg-plot-add").on("click", (ev) => {
       const b = ev.currentTarget;
-      const [zone, areaId] = String(html.find(".mglg-plot-zone").val()).split("|");
+      const [zone, areaId] = String(html.find(".mglg-plot-zone").val() ?? "").split("|");
       addDie({ zone, areaId: areaId || null, kind: b.dataset.kind, face: b.dataset.face ?? null });
     });
     html.find(".mglg-plot-add").attr("draggable", "true").on("dragstart", (ev) => {
@@ -113,6 +113,7 @@ export class SessionHelper extends Application {
       ev.originalEvent.dataTransfer.setData("text/plain", JSON.stringify({ type: "MglgDie", kind: b.dataset.kind, face: b.dataset.face ?? null }));
     });
     html.find(".mglg-plot-assign").on("change", gmOnly(async (ev) => { await assignObserver(ev.currentTarget.dataset.id, ev.currentTarget.value); this.render(); }));
+    html.find(".mglg-plot-delegate").on("change", gmOnly(async (ev) => { await setDelegate(ev.currentTarget.value); this.render(); }));
     html.find(".mglg-plot-mine").on("click", () => clearMine());
     html.find(".mglg-plot-make").on("click", gmOnly(async () => { await createZones(); this.render(); }));
     html.find(".mglg-plot-unmake").on("click", gmOnly(async () => { await removeZones(); this.render(); }));

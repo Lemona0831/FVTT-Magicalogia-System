@@ -100,6 +100,7 @@ export async function removeZones() {
 /** kind: "face"(눈 1~6 지정) | "random" | "focus" */
 export function addDie({ zone, kind, face = null, areaId = null }) {
   if (!hasZones()) return ui.notifications.warn("이 장면에 플롯 구역이 없습니다. GM 에게 구역 만들기를 요청하세요.");
+  if (!game.user.isGM) { zone = myZone(); areaId = null; } // 플레이어는 자기 역할의 구역에만 놓는다
   const data = { zone, kind, face, areaId, owner: game.user.id };
   if (game.user.isGM) return gmAddDie(data);
   const gm = game.users.activeGM;
@@ -123,23 +124,61 @@ function freeSlot(sc, zd, excludeId = null) {
   return { x: r.x + off, y: r.y + off };
 }
 
-async function gmAddDie({ zone, kind, face, owner, sceneId, areaId }) {
-  const sc = sceneId ? game.scenes.get(sceneId) : scene();
+/* ---------- 대표 / 입회 역할 ----------
+ * A 쪽은 플레이어 몫: GM 이 A 대표를 정하면 그 사람은 대표 구역, 나머지 플레이어는 입회 구역을 쓴다.
+ * B 쪽은 GM 이 자유롭게 쓴다. 대표가 바뀌면 이미 놓인 주사위도 새 역할의 구역으로 옮긴다. */
+export const getDelegate = (sc = scene()) => sc?.getFlag("magicalogia", "v3Delegate") || null;
+
+/** 이 사용자가 놓을 구역 키 (GM 은 null: 칸을 직접 고른다) */
+export function myZone(userId = game.user.id) {
+  if (game.users.get(userId)?.isGM) return null;
+  const del = getDelegate();
+  return !del || del === userId ? "A_delegate" : "A_observer";
+}
+export function myRole(userId = game.user.id) {
+  const z = myZone(userId);
+  if (!z) return "GM";
+  if (!getDelegate()) return "대표 (미지정)";
+  return z === "A_delegate" ? "대표" : "입회";
+}
+
+export async function setDelegate(userId) {
+  if (!game.user.isGM) return;
+  const sc = scene(); if (!sc) return;
+  await sc.setFlag("magicalogia", "v3Delegate", userId || null);
+  // 이미 놓인 A 쪽 주사위를 새 역할의 구역으로 옮긴다
+  const dice = sc.tokens.filter((t) => { const d = dieOf(t); return d && d.zone?.startsWith("A_") && !game.users.get(d.owner)?.isGM; });
+  for (const t of dice) {
+    const d = dieOf(t), want = myZone(d.owner);
+    if (!want || d.zone === want) continue;
+    const zd = chooseArea(sc, want, d.owner);
+    if (!zd) continue;
+    const { x, y } = freeSlot(sc, zd, t.id);
+    await t.update({ x, y, "flags.magicalogia.die.zone": want }, { mglgSnap: true });
+  }
+}
+
+/** 구역 키 안에서 이 사람이 쓸 칸을 고른다 */
+function chooseArea(sc, zone, owner, areaId = null) {
   const areas = getZones(sc)[zone];
-  if (!sc || !areas?.length) return;
-  const g = sc.grid.size || 100;
-  const pad = 8;
-  // 구역이 여러 개면 사람마다 자기 칸을 쓴다: 이미 내 주사위가 있는 칸 → 없으면 비어 있는 칸 → 없으면 가장 적은 칸
+  if (!areas?.length) return null;
+  // 구역이 여러 개면 사람마다 자기 칸을 쓴다: 지정한 칸 → 배정된 칸 → 이미 내 주사위가 있는 칸 → 비어 있는 칸
   const diceIn = (d) => { const rr = zoneRect(d); return sc.tokens.filter((t) => dieOf(t) && inside(rr, center(t).cx, center(t).cy)); };
-  const countIn = (d) => diceIn(d).length;
   const ordered = [...areas].sort((a, b) => a.y - b.y || a.x - b.x);
   const ownerOf = (d) => d.getFlag("magicalogia", "owner") || null;
   const picked = areaId ? ordered.find((d) => d.id === areaId) : null;
-  const assigned = ordered.find((d) => ownerOf(d) === owner);                       // 1) 내 칸으로 배정된 곳
-  const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner)); // 2) 이미 내 주사위가 있는 곳
-  const freeAreas = ordered.filter((d) => !ownerOf(d));                              // 3) 아무에게도 배정되지 않은 칸 중 가장 빈 곳
+  const assigned = ordered.find((d) => ownerOf(d) === owner);
+  const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
+  const freeAreas = ordered.filter((d) => !ownerOf(d));
   const pool = freeAreas.length ? freeAreas : ordered;
-  const zd = picked ?? assigned ?? mine ?? pool.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
+  return picked ?? assigned ?? mine ?? pool.map((d) => ({ d, n: diceIn(d).length })).sort((a, b) => a.n - b.n)[0].d;
+}
+
+async function gmAddDie({ zone, kind, face, owner, sceneId, areaId }) {
+  const sc = sceneId ? game.scenes.get(sceneId) : scene();
+  if (!sc) return;
+  const zd = chooseArea(sc, zone, owner, areaId);
+  if (!zd) return;
   const size = DIE_SIZE; // 이미지 원본 크기(70px) 그대로
   const { x, y } = freeSlot(sc, zd);
   const actor = await ensureDiceActor();
@@ -283,6 +322,7 @@ export function initBoard() {
 Hooks.on("dropCanvasData", (cv, data) => {
   if (data?.type !== "MglgDie") return;
   const sc = cv.scene; if (!sc) return false;
+  if (!game.user.isGM) { addDie({ kind: data.kind, face: data.face ?? null }); return false; }
   let best = null;
   for (const [key, list] of Object.entries(getZones(sc))) {
     for (const zd of list) {
