@@ -100,7 +100,7 @@ export async function rollBuiltin(actor, table, theme) {
 }
 
 /** GM 용 설정 창: 보일 표 고르기 / 순서 바꾸기 / 월드 롤테이블 이름 추가 */
-export class TablesConfigApp extends Application {
+export class TablesConfigApp extends FormApplication {
   constructor(options = {}) {
     super(options);
     this.list = getConfig();
@@ -112,9 +112,12 @@ export class TablesConfigApp extends Application {
       title: "시트 v3 · 각종 표 구성",
       template: "systems/magicalogia/templates/sheet-v3/tables-config.html",
       classes: ["mglg-tables-config"],
-      width: 640, height: 640, resizable: true
+      width: 640, height: 640, resizable: true, closeOnSubmit: false, submitOnChange: false
     });
   }
+
+  /** 값은 저장 버튼에서 직접 설정에 쓴다. 폼 제출(Enter 등)은 아무것도 하지 않는다. */
+  async _updateObject() {}
 
   async getData() {
     const db = await loadBuiltin();
