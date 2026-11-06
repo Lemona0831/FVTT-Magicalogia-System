@@ -40,26 +40,40 @@ async function ensureActor() {
 }
 
 /** 요청자(누구든) → GM 이 만든다. {name, type, cost} */
-export function spawnSlip(req) {
+export async function spawnSlip(req) {
   const sceneId = canvas.scene?.id;
   if (!sceneId) return ui.notifications.warn("보이는 장면이 없습니다.");
   const c = canvas.stage?.pivot;
   const data = { ...req, sceneId, owner: game.user.id, x: c?.x ?? 0, y: c?.y ?? 0 };
+  // 코스트의 x 는 1~x 중 쓸 만큼 정하는 가변 수치 → 놓을 때 몇 개 쓸지 고른다 (비워 두면 빈 칸 그림)
+  const xs = parseCost(req.cost).filter((p) => p.n == null);
+  if (xs.length) {
+    const rows = xs.map((p, i) => `<div style="display:flex;gap:8px;align-items:center;margin:4px 0"><b style="min-width:3em">${p.realm}</b><input type="number" name="x${i}" min="1" max="8" placeholder="x (1~8)" style="width:80px"></div>`).join("");
+    const res = await Dialog.prompt({
+      title: `${req.name} · x 정하기`, content: `<p>x 로 쓸 개수를 고르세요 (비워 두면 빈 칸으로 놓습니다).</p><form>${rows}</form>`,
+      label: "놓기", rejectClose: false,
+      callback: (html) => xs.map((_, i) => { const v = Number(html.find(`[name=x${i}]`).val()); return v >= 1 ? Math.min(8, v) : null; })
+    });
+    if (res === undefined) return;
+    data.xs = res;
+  }
   if (game.user.isGM) return gmSlip(data);
   const gm = game.users.activeGM;
   if (!gm) return ui.notifications.warn("GM 이 접속해 있어야 전표를 놓을 수 있습니다.");
   game.socket.emit("system.magicalogia", { id: "v3plot", sender: game.user.id, receiver: gm.id, data: { op: "slip", ...data } });
 }
 
-export async function gmSlip({ name, type, cost, sceneId, x, y, owner }) {
+export async function gmSlip({ name, type, cost, sceneId, x, y, owner, xs }) {
   const sc = game.scenes.get(sceneId); if (!sc) return;
   let parts = parseCost(cost);
   if (!parts.length) parts = [{ realm: type === "장비" ? "장비" : "없음", img: type === "장비" ? "Equipment" : "Black", n: null }];
+  let xi = 0;
+  parts = parts.map((p) => (p.n == null && p.img !== "Black" && p.img !== "Equipment" ? { ...p, n: xs?.[xi++] ?? null, x: true } : p));
   const actor = await ensureActor();
   const g = sc.grid.size || 100, size = 70, gap = 80;
   const x0 = (x ?? 0) - ((parts.length - 1) * gap) / 2 - size / 2;
   const docs = parts.map((p, i) => ({
-    name: `${name} · ${p.realm}${p.n == null ? (p.img === "Black" || p.img === "Equipment" ? "" : " x") : p.n}`,
+    name: `${name} · ${p.realm}${p.n == null ? (p.img === "Black" || p.img === "Equipment" ? "" : " x") : (p.x ? `x=${p.n}` : p.n)}`,
     actorId: actor.id, actorLink: false, x: Math.round(x0 + i * gap), y: Math.round((y ?? 0) - size / 2),
     width: size / g, height: size / g, texture: { src: slipImage(p) }, displayName: CONST.TOKEN_DISPLAY_MODES.HOVER,
     disposition: 0, lockRotation: true, sight: { enabled: false },
