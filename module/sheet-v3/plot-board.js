@@ -10,11 +10,13 @@ import { resolveClash } from "./plot-logic.js";
 import { escapeHTML } from "./escape.js";
 
 const IMG = "systems/magicalogia/assets/plot/dice";
+// 내부 키는 A/B 지만 화면에는 선공/후공으로 보인다 (A = 맵 왼쪽 = 선공, B = 오른쪽 = 후공)
+export const SIDE = { A: "선공", B: "후공" };
 export const ZONES = [
-  { key: "A_delegate", side: "A", role: "delegate", label: "A 대표", color: "#ff4f93" },
-  { key: "A_observer", side: "A", role: "observer", label: "A 입회", color: "#ff9ec4" },
-  { key: "B_delegate", side: "B", role: "delegate", label: "B 대표", color: "#2f6fd0" },
-  { key: "B_observer", side: "B", role: "observer", label: "B 입회", color: "#7fb0f0" }
+  { key: "A_delegate", side: "A", role: "delegate", label: "선공 대표", color: "#ff4f93" },
+  { key: "A_observer", side: "A", role: "observer", label: "선공 입회", color: "#ff9ec4" },
+  { key: "B_delegate", side: "B", role: "delegate", label: "후공 대표", color: "#2f6fd0" },
+  { key: "B_observer", side: "B", role: "observer", label: "후공 입회", color: "#7fb0f0" }
 ];
 const DIE_SIZE = 70;
 const SECRET_KEY = "magicalogia.plotSecrets";
@@ -129,25 +131,27 @@ function freeSlot(sc, zd, excludeId = null) {
  * B 쪽은 GM 이 자유롭게 쓴다. 대표가 바뀌면 이미 놓인 주사위도 새 역할의 구역으로 옮긴다. */
 export const getDelegate = (sc = scene()) => sc?.getFlag("magicalogia", "v3Delegate") || null;
 
+/** 플레이어 쪽이 선공(A)인지 후공(B)인지. 기본 선공. */
+export const getPlayerSide = (sc = scene()) => sc?.getFlag("magicalogia", "v3PlayerSide") || "A";
+
 /** 이 사용자가 놓을 구역 키 (GM 은 null: 칸을 직접 고른다) */
 export function myZone(userId = game.user.id) {
   if (game.users.get(userId)?.isGM) return null;
   const del = getDelegate();
-  return !del || del === userId ? "A_delegate" : "A_observer";
+  const side = getPlayerSide();
+  return !del || del === userId ? `${side}_delegate` : `${side}_observer`;
 }
 export function myRole(userId = game.user.id) {
   const z = myZone(userId);
   if (!z) return "GM";
-  if (!getDelegate()) return "대표 (미지정)";
-  return z === "A_delegate" ? "대표" : "입회";
+  const name = SIDE[getPlayerSide()];
+  if (!getDelegate()) return `${name} 대표 (미지정)`;
+  return `${name} ${z.endsWith("delegate") ? "대표" : "입회"}`;
 }
 
-export async function setDelegate(userId) {
-  if (!game.user.isGM) return;
-  const sc = scene(); if (!sc) return;
-  await sc.setFlag("magicalogia", "v3Delegate", userId || null);
-  // 이미 놓인 A 쪽 주사위를 새 역할의 구역으로 옮긴다
-  const dice = sc.tokens.filter((t) => { const d = dieOf(t); return d && d.zone?.startsWith("A_") && !game.users.get(d.owner)?.isGM; });
+/** 이미 놓인 플레이어 주사위를 현재 역할의 구역으로 옮긴다 */
+async function relocatePlayers(sc) {
+  const dice = sc.tokens.filter((t) => { const d = dieOf(t); return d && !game.users.get(d.owner)?.isGM; });
   for (const t of dice) {
     const d = dieOf(t), want = myZone(d.owner);
     if (!want || d.zone === want) continue;
@@ -156,6 +160,35 @@ export async function setDelegate(userId) {
     const { x, y } = freeSlot(sc, zd, t.id);
     await t.update({ x, y, "flags.magicalogia.die.zone": want }, { mglgSnap: true });
   }
+}
+
+export async function setDelegate(userId) {
+  if (!game.user.isGM) return;
+  const sc = scene(); if (!sc) return;
+  await sc.setFlag("magicalogia", "v3Delegate", userId || null);
+  await relocatePlayers(sc);
+}
+export async function setPlayerSide(side) {
+  if (!game.user.isGM) return;
+  const sc = scene(); if (!sc) return;
+  await sc.setFlag("magicalogia", "v3PlayerSide", side === "B" ? "B" : "A");
+  await relocatePlayers(sc);
+}
+
+/** 기존 구역 이름표를 선공/후공 이름으로 갱신 */
+export async function relabelZones() {
+  if (!game.user.isGM) return;
+  const sc = scene(); if (!sc) return;
+  const ups = [];
+  for (const [key, list] of Object.entries(getZones(sc))) {
+    const z = ZONES.find((x) => x.key === key); if (!z) continue;
+    for (const d of list) {
+      const o = d.getFlag("magicalogia", "owner");
+      const nm = o ? game.users.get(o)?.name : "";
+      ups.push({ _id: d.id, text: nm ? `${z.label} · ${nm}` : z.label });
+    }
+  }
+  if (ups.length) await sc.updateEmbeddedDocuments("Drawing", ups);
 }
 
 /** 구역 키 안에서 이 사람이 쓸 칸을 고른다 */
@@ -279,8 +312,8 @@ export async function resolvePlot(attackerSide) {
   if (res.unusedDefense.length) notes.push(`남은 방어 주사위 ${res.unusedDefense.join("·")} (대미지 적용 후 마소로 변환 가능)`);
   notes.push("[추가 대미지]·[블록] 등 이펙트는 따로 적용하세요.");
   const content = `<div class="mglg-sess-chat">
-    <b>플롯 비교</b> · ${A} 공격 → ${D} 방어<br>
-    ${row(`${A} 공격`, res.attack)}${row(`${D} 대표`, res.defDelegate)}${row(`${D} 입회`, res.defObserver)}
+    <b>플롯 비교</b> · ${SIDE[A]} 공격 → ${SIDE[D]} 방어<br>
+    ${row(`${SIDE[A]} 공격`, res.attack)}${row(`${SIDE[D]} 대표`, res.defDelegate)}${row(`${SIDE[D]} 입회`, res.defObserver)}
     <div style="margin-top:6px">${head}</div>
     ${notes.map((n) => `<div style="font-size:12px">${escapeHTML(n)}</div>`).join("")}
   </div>`;
@@ -343,7 +376,7 @@ export function observerAreas(sc = scene()) {
   const out = [];
   for (const side of ["A", "B"]) {
     (getZones(sc)[`${side}_observer`] ?? []).sort((a, b) => a.y - b.y || a.x - b.x)
-      .forEach((d, i) => out.push({ id: d.id, side, label: `${side} 입회 ${i + 1}`, owner: d.getFlag("magicalogia", "owner") || "" }));
+      .forEach((d, i) => out.push({ id: d.id, side, label: `${SIDE[side]} 입회 ${i + 1}`, owner: d.getFlag("magicalogia", "owner") || "" }));
   }
   return out;
 }
@@ -354,5 +387,5 @@ export async function assignObserver(areaId, userId) {
   const sc = scene(); const d = sc?.drawings.get(areaId); if (!d) return;
   const side = d.getFlag("magicalogia", "zone")?.[0] ?? "";
   const name = userId ? (game.users.get(userId)?.name ?? "") : "";
-  await d.update({ "flags.magicalogia.owner": userId || null, text: name ? `${side} 입회 · ${name}` : `${side} 입회` });
+  await d.update({ "flags.magicalogia.owner": userId || null, text: name ? `${SIDE[side]} 입회 · ${name}` : `${SIDE[side]} 입회` });
 }

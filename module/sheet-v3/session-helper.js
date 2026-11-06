@@ -1,5 +1,5 @@
 import { escapeHTML } from "./escape.js";
-import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver, getZones, getDelegate, setDelegate, myRole } from "./plot-board.js";
+import { ZONES, hasZones, createZones, removeZones, addDie, clearMine, clearDice, revealAll, resolvePlot, observerAreas, assignObserver, getZones, getDelegate, setDelegate, myRole, getPlayerSide, setPlayerSide, relabelZones, SIDE } from "./plot-board.js";
 /**
  * 세션 도우미 (GM · PL 공용).
  *  - 장면 종류(드라마/전투/클라이맥스)와 현재 세계 법칙: GM 이 정하고 모두에게 동기화 (월드 설정 v3Session, 쓰기는 GM 만).
@@ -55,7 +55,8 @@ function myActor() {
 function placeTargets() {
   const out = [];
   const zs = getZones();
-  for (const z of ZONES.filter((z) => z.side === "B")) {
+  const gmSide = getPlayerSide() === "A" ? "B" : "A"; // GM(마스터/에너미)는 플레이어 반대쪽
+  for (const z of ZONES.filter((z) => z.side === gmSide)) {
     out.push({ key: `${z.key}|`, label: z.label + (zs[z.key]?.length > 1 ? " (자동)" : "") });
     const list = [...(zs[z.key] ?? [])].sort((a, b) => a.y - b.y || a.x - b.x);
     if (list.length > 1) list.forEach((d, i) => out.push({ key: `${z.key}|${d.id}`, label: `${z.label} ${i + 1}` }));
@@ -85,7 +86,7 @@ export class SessionHelper extends Application {
     const tab = this._tab ?? "status";
     return {
       tab: { status: tab === "status", roll: tab === "roll", plot: tab === "plot", gm: tab === "gm" },
-      zones: placeTargets(), myRole: myRole(), delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
+      zones: placeTargets(), myRole: myRole(), playerSide: getPlayerSide(), sideA: getPlayerSide() === "A", sideB: getPlayerSide() === "B", gmSideName: SIDE[getPlayerSide() === "A" ? "B" : "A"], delegates: game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, sel: u.id === getDelegate() })), faces: [1, 2, 3, 4, 5, 6], hasZones: hasZones(),
       observers: observerAreas().map((o) => ({ ...o, users: game.users.map((u) => ({ id: u.id, name: u.name, sel: u.id === o.owner })), auto: !o.owner })),
       theme: resolveTheme(),
       isGM: game.user.isGM,
@@ -114,6 +115,8 @@ export class SessionHelper extends Application {
     });
     html.find(".mglg-plot-assign").on("change", gmOnly(async (ev) => { await assignObserver(ev.currentTarget.dataset.id, ev.currentTarget.value); this.render(); }));
     html.find(".mglg-plot-delegate").on("change", gmOnly(async (ev) => { await setDelegate(ev.currentTarget.value); this.render(); }));
+    html.find(".mglg-plot-side").on("change", gmOnly(async (ev) => { await setPlayerSide(ev.currentTarget.value); this.render(); }));
+    html.find(".mglg-plot-relabel").on("click", gmOnly(() => relabelZones()));
     html.find(".mglg-plot-mine").on("click", () => clearMine());
     html.find(".mglg-plot-make").on("click", gmOnly(async () => { await createZones(); this.render(); }));
     html.find(".mglg-plot-unmake").on("click", gmOnly(async () => { await removeZones(); this.render(); }));
