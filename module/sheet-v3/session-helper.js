@@ -94,6 +94,10 @@ export class SessionHelper extends Application {
       const b = ev.currentTarget;
       addDie({ zone: html.find(".mglg-plot-zone").val(), kind: b.dataset.kind, face: b.dataset.face ?? null });
     });
+    html.find(".mglg-plot-add").attr("draggable", "true").on("dragstart", (ev) => {
+      const b = ev.currentTarget;
+      ev.originalEvent.dataTransfer.setData("text/plain", JSON.stringify({ type: "MglgDie", kind: b.dataset.kind, face: b.dataset.face ?? null }));
+    });
     html.find(".mglg-plot-mine").on("click", () => clearMine());
     html.find(".mglg-plot-make").on("click", gmOnly(async () => { await createZones(); this.render(); }));
     html.find(".mglg-plot-unmake").on("click", gmOnly(async () => { await removeZones(); this.render(); }));

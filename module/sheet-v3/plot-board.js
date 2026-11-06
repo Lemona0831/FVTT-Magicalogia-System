@@ -98,9 +98,9 @@ export async function removeZones() {
 
 /* ---------- 주사위 놓기 ---------- */
 /** kind: "face"(눈 1~6 지정) | "random" | "focus" */
-export function addDie({ zone, kind, face = null }) {
+export function addDie({ zone, kind, face = null, areaId = null }) {
   if (!hasZones()) return ui.notifications.warn("이 장면에 플롯 구역이 없습니다. GM 에게 구역 만들기를 요청하세요.");
-  const data = { zone, kind, face, owner: game.user.id };
+  const data = { zone, kind, face, areaId, owner: game.user.id };
   if (game.user.isGM) return gmAddDie(data);
   const gm = game.users.activeGM;
   if (!gm) return ui.notifications.warn("GM 이 접속해 있어야 주사위를 놓을 수 있습니다.");
@@ -120,7 +120,7 @@ function freeSlot(sc, zd, excludeId = null) {
   return { x: r.x + pad, y: r.y + 40 };
 }
 
-async function gmAddDie({ zone, kind, face, owner, sceneId }) {
+async function gmAddDie({ zone, kind, face, owner, sceneId, areaId }) {
   const sc = sceneId ? game.scenes.get(sceneId) : scene();
   const areas = getZones(sc)[zone];
   if (!sc || !areas?.length) return;
@@ -131,7 +131,8 @@ async function gmAddDie({ zone, kind, face, owner, sceneId }) {
   const countIn = (d) => diceIn(d).length;
   const ordered = [...areas].sort((a, b) => a.y - b.y || a.x - b.x);
   const mine = ordered.find((d) => diceIn(d).some((t) => dieOf(t).owner === owner));
-  const zd = mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
+  const picked = areaId ? ordered.find((d) => d.id === areaId) : null;
+  const zd = picked ?? mine ?? ordered.map((d) => ({ d, n: countIn(d) })).sort((a, b) => a.n - b.n)[0].d;
   const size = DIE_SIZE; // 이미지 원본 크기(70px) 그대로
   const { x, y } = freeSlot(sc, zd);
   const actor = await ensureDiceActor();
@@ -270,3 +271,22 @@ export function initBoard() {
     else if (d.op === "clearMine") clearDice(d.owner, d.sceneId);
   });
 }
+
+/* ---------- 창의 주사위 버튼을 맵으로 끌어다 놓기 ---------- */
+Hooks.on("dropCanvasData", (cv, data) => {
+  if (data?.type !== "MglgDie") return;
+  const sc = cv.scene; if (!sc) return false;
+  let best = null;
+  for (const [key, list] of Object.entries(getZones(sc))) {
+    for (const zd of list) {
+      const r = zoneRect(zd);
+      const dx = Math.max(r.x - data.x, 0, data.x - (r.x + r.w)), dy = Math.max(r.y - data.y, 0, data.y - (r.y + r.h));
+      const dist = Math.hypot(dx, dy);
+      if (!best || dist < best.dist) best = { key, zd, dist };
+    }
+  }
+  if (!best) { ui.notifications.warn("이 장면에 플롯 구역이 없습니다."); return false; }
+  if (best.dist > (sc.grid.size || 100) * 4) { ui.notifications.warn("구역 근처에 놓아 주세요."); return false; }
+  addDie({ zone: best.key, kind: data.kind, face: data.face ?? null, areaId: best.zd.id });
+  return false;
+});
