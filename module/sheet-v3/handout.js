@@ -36,8 +36,11 @@ export function kindOf(j) {
 export const scenarioOf = (j) => j.folder?.folder?.id ?? "";
 
 export const info = (j) => j.getFlag("magicalogia", "handout") ?? {};
-/** 비밀 저널 (플레이어에게는 공개되기 전까지 undefined) */
-export const secretOf = (j) => (info(j).secretId ? game.journal.get(info(j).secretId) : undefined);
+/** 비밀 저널. 플레이어에게는 '존재한다'가 아니라 '내가 볼 권한(열람)이 있는가'로 판단한다 — 없으면 undefined */
+export const secretOf = (j) => {
+  const s = info(j).secretId ? game.journal.get(info(j).secretId) : undefined;
+  return s && (game.user.isGM || s.testUserPermission(game.user, "OBSERVER")) ? s : undefined;
+};
 
 /** 시나리오 목록: HO / ENEMY 하위 폴더를 가진 최상위 저널 폴더 */
 export function scenarios() {

@@ -23,3 +23,15 @@ assert.deepEqual(ids("enemy"), ["x"]);
 game.user.isGM = true;
 assert.deepEqual(ids("ho"), ["a", "m", "n"]);                                    // GM 은 권한과 무관하게 시나리오 안의 전부
 console.log("handout ok");
+// 비밀 저널: 클라이언트에 존재해도 열람 권한이 없으면 플레이어에게는 없는 것으로 취급
+{
+  const sec = { id: "S", testUserPermission: () => false };
+  const pub = { id: "P", getFlag: (_, k) => (k === "handout" ? { secretId: "S" } : undefined) };
+  globalThis.game = { user: { isGM: false }, journal: { get: (id) => (id === "S" ? sec : undefined) } };
+  assert.equal(H.secretOf(pub), undefined);
+  sec.testUserPermission = () => true;
+  assert.equal(H.secretOf(pub), sec);
+  game.user.isGM = true; sec.testUserPermission = () => false;
+  assert.equal(H.secretOf(pub), sec);
+}
+console.log("handout secret ok");
