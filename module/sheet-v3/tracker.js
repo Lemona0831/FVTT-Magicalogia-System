@@ -47,7 +47,9 @@ export function initTracker() {
   });
 
   // 업데이트 전: 이전 값 확보 → options 에 실어 보낸다 (update 훅에는 이미 새 값이 들어 있음)
-  Hooks.on("preUpdateActor", (a, ch, opt) => { opt.mglgTrack = diffs(a, ch, ACTOR_FIELDS); });
+  // 장서 전표·원형 토큰은 막대 값으로 system.mana 를 빌려 쓰는 공용 액터다 → 액터 기준 알림에서는 제외 (원형은 아래 토큰 훅이 '블록'으로, 장서는 아이템 훅이 '충전'으로 알린다)
+  const shared = (a) => a.getFlag("magicalogia", "slipActor") || a.getFlag("magicalogia", "archetypeActor");
+  Hooks.on("preUpdateActor", (a, ch, opt) => { opt.mglgTrack = shared(a) ? [] : diffs(a, ch, ACTOR_FIELDS); });
   Hooks.on("preUpdateItem", (it, ch, opt) => { opt.mglgTrack = diffs(it, ch, ITEM_FIELDS[it.type] ?? []); });
   Hooks.on("preUpdateToken", (tk, ch, opt) => {
     if (!tk.getFlag("magicalogia", "archetype")) return;
