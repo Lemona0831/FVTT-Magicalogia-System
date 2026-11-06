@@ -1,6 +1,6 @@
 /**
  * 장서 토큰 (Roll20 magicalogia_mana_token 에 해당).
- *  - 장서(마법) 한 권마다 토큰 하나. 토큰 이름 = 마법 이름 (마우스를 올리면 표시).
+ *  - 장서(마법) 한 권마다 토큰 하나. 토큰 이름 = 마법 이름 (항상 표시).
  *  - 그림 = 코스트에 적힌 영역(별·짐승·힘·노래·꿈·어둠·전체)의 책, 칸이 찬 수 = 현재 충전(마소).
  *    코스트에 영역이 여럿이면 영역 순서(별→전체)에서 마지막으로 나오는 것, 없으면 전체 (Roll20 과 같은 규칙).
  *  - 충전은 양방향: 시트에서 바꾸면 토큰 그림이 바뀌고, 맵에서 토큰 막대 값(토큰 우클릭 HUD의 막대 칸)을 바꾸면 시트 충전이 바뀐다.
@@ -70,7 +70,7 @@ export async function gmSlips({ items, sceneId, x, y, owner }) {
       name: it.name, actorId: actor.id, actorLink: false,
       x: Math.round((x ?? 0) - 3 * SIZE + col * SIZE), y: Math.round((y ?? 0) - SIZE / 2 + row * SIZE),
       width: SIZE / g, height: SIZE / g, texture: { src: slipImage(areaOf(it.system.cost), it.system.charge) },
-      displayName: CONST.TOKEN_DISPLAY_MODES.HOVER, displayBars: CONST.TOKEN_DISPLAY_MODES.NONE, bar1: { attribute: "mana" },
+      displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, displayBars: CONST.TOKEN_DISPLAY_MODES.NONE, bar1: { attribute: "mana" },
       disposition: 0, lockRotation: true, sight: { enabled: false },
       flags: { magicalogia: { slip: { actorId, itemId, owner } } }
     });
