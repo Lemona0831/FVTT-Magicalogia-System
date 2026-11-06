@@ -1,83 +1,96 @@
 /**
- * 장서 전표 토큰. 시트의 마법(장서) → 맵에 코스트 그림 토큰을 올린다 (시트 → 전표 한 방향).
- * 코스트 표기: "별 2 어둠 x" (영역 + 숫자, x = 정해지지 않음), "전 x"/"전체 2" = 전체, "없음" = 코스트 없음.
- * 영역마다 토큰 하나(책 그림 + 코스트 수만큼 칸이 찬 그림). 이미지는 assets/slip/ (설치본에만 둔다 — .gitignore 참고).
+ * 장서 토큰 (Roll20 magicalogia_mana_token 에 해당).
+ *  - 장서(마법) 한 권마다 토큰 하나. 토큰 이름 = 마법 이름 (마우스를 올리면 표시).
+ *  - 그림 = 코스트에 적힌 영역(별·짐승·힘·노래·꿈·어둠·전체)의 책, 칸이 찬 수 = 현재 충전(마소).
+ *    코스트에 영역이 여럿이면 영역 순서(별→전체)에서 마지막으로 나오는 것, 없으면 전체 (Roll20 과 같은 규칙).
+ *  - 시트에서 충전을 바꾸면 맵의 토큰 그림도 바뀐다 (시트 → 토큰 한 방향).
+ * 이미지는 assets/slip/ (설치본에만 둔다 — .gitignore 참고).
  */
-
 const ASSET = "systems/magicalogia/assets/slip";
-const REALMS = [["별", "Star"], ["짐승", "Beast"], ["힘", "Power"], ["노래", "Melody"], ["꿈", "Dream"], ["어둠", "Darkness"], ["전체", "All"], ["전", "All"]];
+const AREAS = [["별", "Star"], ["짐승", "Beast"], ["힘", "Power"], ["노래", "Melody"], ["꿈", "Dream"], ["어둠", "Darkness"], ["전체", "All"]];
+const DEFAULT_IMG = "All";
+const SIZE = 70;
 
-/** "별 2 어둠 x" → [{realm:"별", img:"Star", n:2}, {realm:"어둠", img:"Darkness", n:null}] (n=null: x) */
-export function parseCost(str) {
-  const s = String(str ?? "").trim();
-  if (!s || /^(없음|무|-)$/.test(s)) return [];
-  const out = [];
-  const re = /(전체|전|별|짐승|힘|노래|꿈|어둠)\s*(\d+|[xX×])?/g;
-  let m;
-  while ((m = re.exec(s))) {
-    const img = REALMS.find(([k]) => k === m[1])[1];
-    const raw = m[2];
-    out.push({ realm: m[1] === "전" ? "전체" : m[1], img, n: raw && /\d/.test(raw) ? Math.min(8, Number(raw)) : null });
+/** "별 2 어둠 x" → "Darkness" (영역 순서상 마지막으로 포함된 것). "전 x" 같은 줄임도 전체로 본다. 없으면 All */
+export function areaOf(cost) {
+  const s = String(cost ?? "");
+  let img = DEFAULT_IMG;
+  for (const [name, file] of AREAS) {
+    if (s.includes(name) || (name === "전체" && /(^|[\s\d])전(?![가-힣])/.test(s))) img = file;
   }
-  return out;
+  return img;
 }
 
-/** 파일 이름: 숫자 1~8 → Star-03, 0 → Star-00, x/없음 → Star-0 */
-export function slipImage({ img, n }) {
-  return `${ASSET}/${img}-${n == null ? "0" : String(n).padStart(2, "0")}.png`;
+/** 충전 0~8 → Star-0 / Star-01 … Star-08 (9 이상은 8) */
+export function slipImage(img, charge) {
+  const n = Math.max(0, Math.min(8, Number.parseInt(charge, 10) || 0));
+  return `${ASSET}/${img}-${n === 0 ? "0" : String(n).padStart(2, "0")}.png`;
 }
 
 async function ensureActor() {
   let a = game.actors.find((x) => x.getFlag("magicalogia", "slipActor"));
   if (a) return a;
   a = await Actor.create({
-    name: "장서 전표", type: "character", img: `${ASSET}/Black.png`,
+    name: "장서 전표", type: "character", img: `${ASSET}/All-0.png`,
     ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
     flags: { magicalogia: { slipActor: true } }
   });
-  ui.notifications.info("'장서 전표' 액터를 만들었습니다 (전표 토큰이 쓰는 공용 액터). 지우지 마세요.");
+  ui.notifications.info("'장서 전표' 액터를 만들었습니다 (장서 토큰이 쓰는 공용 액터). 지우지 마세요.");
   return a;
 }
 
-/** 요청자(누구든) → GM 이 만든다. {name, type, cost} */
-export async function spawnSlip(req) {
+/** 요청: items = [{actorId, itemId}] — 누구든 요청, 토큰은 GM 클라이언트가 만든다 */
+export function spawnSlips(items) {
   const sceneId = canvas.scene?.id;
   if (!sceneId) return ui.notifications.warn("보이는 장면이 없습니다.");
   const c = canvas.stage?.pivot;
-  const data = { ...req, sceneId, owner: game.user.id, x: c?.x ?? 0, y: c?.y ?? 0 };
-  // 코스트의 x 는 1~x 중 쓸 만큼 정하는 가변 수치 → 놓을 때 몇 개 쓸지 고른다 (비워 두면 빈 칸 그림)
-  const xs = parseCost(req.cost).filter((p) => p.n == null);
-  if (xs.length) {
-    const rows = xs.map((p, i) => `<div style="display:flex;gap:8px;align-items:center;margin:4px 0"><b style="min-width:3em">${p.realm}</b><input type="number" name="x${i}" min="1" max="8" placeholder="x (1~8)" style="width:80px"></div>`).join("");
-    const res = await Dialog.prompt({
-      title: `${req.name} · x 정하기`, content: `<p>x 로 쓸 개수를 고르세요 (비워 두면 빈 칸으로 놓습니다).</p><form>${rows}</form>`,
-      label: "놓기", rejectClose: false,
-      callback: (html) => xs.map((_, i) => { const v = Number(html.find(`[name=x${i}]`).val()); return v >= 1 ? Math.min(8, v) : null; })
-    });
-    if (res === undefined) return;
-    data.xs = res;
-  }
-  if (game.user.isGM) return gmSlip(data);
+  const data = { items, sceneId, x: c?.x ?? 0, y: c?.y ?? 0, owner: game.user.id };
+  if (game.user.isGM) return gmSlips(data);
   const gm = game.users.activeGM;
-  if (!gm) return ui.notifications.warn("GM 이 접속해 있어야 전표를 놓을 수 있습니다.");
+  if (!gm) return ui.notifications.warn("GM 이 접속해 있어야 장서 토큰을 놓을 수 있습니다.");
   game.socket.emit("system.magicalogia", { id: "v3plot", sender: game.user.id, receiver: gm.id, data: { op: "slip", ...data } });
 }
 
-export async function gmSlip({ name, type, cost, sceneId, x, y, owner, xs }) {
+const findSlips = (itemId) => game.scenes.contents.flatMap((sc) => sc.tokens.filter((t) => t.getFlag("magicalogia", "slip")?.itemId === itemId));
+
+export async function gmSlips({ items, sceneId, x, y, owner }) {
   const sc = game.scenes.get(sceneId); if (!sc) return;
-  let parts = parseCost(cost);
-  if (!parts.length) parts = [{ realm: type === "장비" ? "장비" : "없음", img: type === "장비" ? "Equipment" : "Black", n: null }];
-  let xi = 0;
-  parts = parts.map((p) => (p.n == null && p.img !== "Black" && p.img !== "Equipment" ? { ...p, n: xs?.[xi++] ?? null, x: true } : p));
   const actor = await ensureActor();
-  const g = sc.grid.size || 100, size = 70, gap = 80;
-  const x0 = (x ?? 0) - ((parts.length - 1) * gap) / 2 - size / 2;
-  const docs = parts.map((p, i) => ({
-    name: `${name} · ${p.realm}${p.n == null ? (p.img === "Black" || p.img === "Equipment" ? "" : " x") : (p.x ? `x=${p.n}` : p.n)}`,
-    actorId: actor.id, actorLink: false, x: Math.round(x0 + i * gap), y: Math.round((y ?? 0) - size / 2),
-    width: size / g, height: size / g, texture: { src: slipImage(p) }, displayName: CONST.TOKEN_DISPLAY_MODES.HOVER,
-    disposition: 0, lockRotation: true, sight: { enabled: false },
-    flags: { magicalogia: { slip: { spell: name, realm: p.realm, n: p.n, owner } } }
-  }));
-  await sc.createEmbeddedDocuments("Token", docs);
+  const g = sc.grid.size || 100;
+  const docs = [];
+  let count = 0;
+  for (const { actorId, itemId } of items ?? []) {
+    const it = game.actors.get(actorId)?.items.get(itemId);
+    if (!it || it.type !== "ability") continue;
+    // 같은 장서의 토큰이 이 장면에 이미 있으면 새로 만들지 않는다
+    if (sc.tokens.some((t) => t.getFlag("magicalogia", "slip")?.itemId === itemId)) continue;
+    const col = count % 6, row = Math.floor(count / 6);
+    docs.push({
+      name: it.name, actorId: actor.id, actorLink: false,
+      x: Math.round((x ?? 0) - 3 * SIZE + col * SIZE), y: Math.round((y ?? 0) - SIZE / 2 + row * SIZE),
+      width: SIZE / g, height: SIZE / g, texture: { src: slipImage(areaOf(it.system.cost), it.system.charge) },
+      displayName: CONST.TOKEN_DISPLAY_MODES.HOVER, disposition: 0, lockRotation: true, sight: { enabled: false },
+      flags: { magicalogia: { slip: { actorId, itemId, owner } } }
+    });
+    count++;
+  }
+  if (docs.length) await sc.createEmbeddedDocuments("Token", docs);
+  else ui.notifications.info("새로 놓을 장서가 없습니다 (이미 이 장면에 있거나 장서가 없습니다).");
+}
+
+/** 시트에서 충전·코스트·이름이 바뀌면 맵의 장서 토큰을 맞춘다 / 장서가 지워지면 토큰도 지운다 (활성 GM 한 명만 실행) */
+export function initSlips() {
+  const isMe = () => game.users.activeGM?.isSelf;
+  Hooks.on("updateItem", (it, ch) => {
+    if (!isMe() || it.type !== "ability") return;
+    const f = foundry.utils.flattenObject(ch ?? {});
+    if (!["system.charge", "system.cost", "name"].some((k) => k in f)) return;
+    for (const t of findSlips(it.id)) {
+      t.update({ name: it.name, "texture.src": slipImage(areaOf(it.system.cost), it.system.charge) });
+    }
+  });
+  Hooks.on("deleteItem", (it) => {
+    if (!isMe() || it.type !== "ability") return;
+    for (const t of findSlips(it.id)) t.delete();
+  });
 }
