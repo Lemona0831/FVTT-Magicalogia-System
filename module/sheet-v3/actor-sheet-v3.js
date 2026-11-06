@@ -1,4 +1,5 @@
 import { rollTalentCard } from "./roll-card.js";
+import { tableOptions, rollConfigured } from "./tables.js";
 import { computeTargets, realmDebuff, gapsForCuriosity, stripRealmNumber, REALMS, ROWS } from "./talent-calc.js";
 
 const REALM_KEYS = ["A", "B", "C", "D", "E", "F"];
@@ -16,7 +17,6 @@ const SIGILS = [
   "M13.5 2.5 A8 8 0 1 0 17 14 A6 6 0 0 1 13.5 2.5 Z",
   "M2 10 C5 5.5 15 5.5 18 10 C15 14.5 5 14.5 2 10 Z M10 10 m-2.3 0 a2.3 2.3 0 1 0 4.6 0 a2.3 2.3 0 1 0 -4.6 0"
 ];
-const TABLE_NAMES = ["장면표", "사건표", "소원표", "운명 변전표", "펌블표", "프라이즈표", "무작위 특기", "랜덤 플롯"];
 const THEME_TEXT = {
   rulebook: { eyebrow: "마도서 대전 TRPG · 캐릭터 시트", legend: "검은 띠 = 칠한 갭 · 테두리 = 습득 특기" },
   academy: { eyebrow: "MAGUS REGISTRATION CARD", legend: "하늘색 띠 = 칠한 갭 · 남색 칸 = 습득 특기" },
@@ -168,7 +168,7 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
           id: i.id, name: i.name, description: i.system.description,
           secret: (game.user.isGM || (i.system.sVisible instanceof Object && i.system.sVisible[game.user.id])) ? i.system.secret : null
         })),
-      tables: TABLE_NAMES.map((name) => ({ name, missing: !game.tables?.getName(name) })),
+      tables: await tableOptions(),
       merits: ["의무", "승리", "생존", "신조", "롤플레이", "심금", "사명", "희생", "기타"].map((label, k) => ({
         label, key: ["duty", "victory", "survival", "creed", "roleplay", "heartstring", "mission", "sacrifice", "other"][k],
         on: !!this.actor.getFlag("magicalogia", `sheetV3.merits.${["duty", "victory", "survival", "creed", "roleplay", "heartstring", "mission", "sacrifice", "other"][k]}`)
@@ -314,10 +314,9 @@ export class MagicalogiaActorSheetV3 extends ActorSheet {
 
   async _onRollTable(ev) {
     ev.preventDefault();
-    const name = this.element.find(".mglg-table-select").val();
-    const table = game.tables?.getName(name);
-    if (!table) return ui.notifications.warn(`'${name}' 롤테이블이 없습니다. 같은 이름의 롤테이블을 만들어 주세요.`);
-    return table.draw();
+    const value = this.element.find(".mglg-table-select").val();
+    if (!value) return;
+    return rollConfigured(this.actor, value, resolveTheme());
   }
 
   async _onRollDice(ev) {

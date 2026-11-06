@@ -1,0 +1,11 @@
+<div title="{{formula}}" class="mglg-card mglg-tcard theme-{{theme}} out-success">
+  <div class="mglg-card-who">{{actorName}}</div>
+  <div class="mglg-card-title">{{title}}</div>
+  <div class="mglg-card-stage">
+    {{#each dice}}<div class="mglg-die">{{#each this.pips}}<i class="mglg-pip{{#if this}} on{{/if}}"></i>{{/each}}</div>{{/each}}
+    {{#unless hideTotal}}{{#if dice.length}}<span class="mglg-eq">=</span>{{/if}}<span class="mglg-total">{{total}}</span>{{/unless}}
+  </div>
+  {{#if col}}<div class="mglg-card-col">{{col}}</div>{{/if}}
+  <div class="mglg-card-text">{{text}}</div>
+  {{#if note}}<div class="mglg-card-target">{{note}}</div>{{/if}}
+</div>

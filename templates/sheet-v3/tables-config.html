@@ -1,0 +1,51 @@
+<div class="mglg-tc">
+  <p class="mglg-tc-hint">시트의 "각종 표" 드롭다운에 나올 표와 순서를 정합니다. 월드 설정이라 모든 플레이어에게 똑같이 적용됩니다.</p>
+  {{#unless hasBuiltin}}<p class="mglg-tc-warn">내장 표 데이터(data/tables.json)가 없습니다. 월드 롤테이블만 쓸 수 있습니다.</p>{{/unless}}
+
+  <div class="mglg-tc-cols">
+    <section class="mglg-tc-col">
+      <h3>보이는 표 <small>(위에서부터 순서대로)</small></h3>
+      <ol class="mglg-tc-list">
+        {{#each list}}
+        <li class="{{#if missing}}missing{{/if}}">
+          <span class="mglg-tc-name">{{name}}{{#if world}} <em>월드</em>{{/if}}{{#if missing}} <em class="warn">없음</em>{{/if}}</span>
+          <button type="button" class="mglg-tc-up" data-i="{{i}}" {{#if first}}disabled{{/if}} title="위로">▲</button>
+          <button type="button" class="mglg-tc-down" data-i="{{i}}" {{#if last}}disabled{{/if}} title="아래로">▼</button>
+          <button type="button" class="mglg-tc-remove" data-i="{{i}}" title="빼기">✕</button>
+        </li>
+        {{else}}<li class="empty">비어 있습니다. 오른쪽에서 골라 주세요.</li>{{/each}}
+      </ol>
+    </section>
+
+    <section class="mglg-tc-col">
+      <h3>고르기 <small>(체크 = 보이기)</small></h3>
+      <div class="mglg-tc-bulk">
+        <button type="button" class="mglg-tc-all">내장 표 모두 켜기</button>
+        <button type="button" class="mglg-tc-none">내장 표 모두 끄기</button>
+      </div>
+      {{#each groups}}
+      <fieldset>
+        <legend>{{name}}</legend>
+        {{#each tables}}
+        <label><input type="checkbox" class="mglg-tc-toggle" data-k="b" data-n="{{name}}" {{#if on}}checked{{/if}}> {{name}} <span class="dice">{{dice}}</span></label>
+        {{/each}}
+      </fieldset>
+      {{/each}}
+      <fieldset>
+        <legend>월드 롤테이블</legend>
+        {{#each worldTables}}
+        <label><input type="checkbox" class="mglg-tc-toggle" data-k="w" data-n="{{name}}" {{#if on}}checked{{/if}}> {{name}}</label>
+        {{else}}<p class="mglg-tc-hint">월드에 롤테이블이 없습니다.</p>{{/each}}
+        <div class="mglg-tc-addname">
+          <input type="text" class="mglg-tc-name" placeholder="롤테이블 이름 직접 입력">
+          <button type="button" class="mglg-tc-add-name">추가</button>
+        </div>
+      </fieldset>
+    </section>
+  </div>
+
+  <footer class="mglg-tc-foot">
+    <button type="button" class="mglg-tc-reset">기본값으로</button>
+    <button type="button" class="mglg-tc-save"><i class="fas fa-save"></i> 저장</button>
+  </footer>
+</div>

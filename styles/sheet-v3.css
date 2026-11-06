@@ -369,3 +369,31 @@
 @keyframes mglg-spin { 0% { transform:scale(1) rotate(0); } 40% { transform:scale(2.6) rotate(200deg); } 100% { transform:scale(1) rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) { .mglg-card, .mglg-card * { animation:none !important; } }
+
+/* ---------- 표 카드 ---------- */
+.mglg-card.mglg-tcard { text-align:center; }
+.mglg-card-col { margin-top:6px; font-size:10px; font-weight:800; opacity:.7; }
+.mglg-card-text { margin:8px 2px 0; padding:7px 9px; text-align:left; font-size:12.5px; line-height:1.55; background:rgba(255,255,255,.65); border:2px solid var(--ink); border-radius:10px; word-break:keep-all; }
+.mglg-card.theme-urban .mglg-card-text { background:rgba(255,255,255,.08); border-color:#b9a8ff; }
+.mglg-card.mglg-pop .mglg-card-text { animation:mglg-fade .3s linear calc(var(--d) * .85 + .5s) both; }
+
+/* ---------- 표 구성 창 ---------- */
+.mglg-tables-config .window-content { padding:10px 12px; }
+.mglg-tc { display:flex; flex-direction:column; height:100%; gap:8px; }
+.mglg-tc-hint { margin:0; font-size:12px; opacity:.75; } .mglg-tc-warn { margin:0; color:#b8443c; font-weight:700; font-size:12px; }
+.mglg-tc-cols { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.mglg-tc-col { overflow:auto; padding-right:4px; }
+.mglg-tc-col h3 { margin:0 0 6px; font-size:14px; border:0; } .mglg-tc-col h3 small { font-weight:400; opacity:.65; font-size:11px; }
+.mglg-tc-list { list-style:none; margin:0; padding:0; }
+.mglg-tc-list li { display:flex; align-items:center; gap:4px; padding:3px 6px; margin-bottom:3px; border:1px solid #b6b0a0; border-radius:6px; background:rgba(255,255,255,.5); }
+.mglg-tc-list li.empty { opacity:.6; border-style:dashed; } .mglg-tc-list li.missing { border-color:#b8443c; }
+.mglg-tc-name { flex:1; font-size:12px; } .mglg-tc-name em { font-style:normal; font-size:10px; padding:0 5px; border-radius:99px; background:#e7defa; margin-left:4px; } .mglg-tc-name em.warn { background:#f8d5d2; }
+.mglg-tc-list button, .mglg-tc-bulk button, .mglg-tc-addname button, .mglg-tc-foot button { cursor:pointer; padding:1px 7px; line-height:20px; }
+.mglg-tc-list button { width:24px; padding:0; }
+.mglg-tc-bulk { display:flex; gap:6px; margin-bottom:6px; }
+.mglg-tc-col fieldset { margin:0 0 8px; padding:4px 8px 6px; border:1px solid #b6b0a0; border-radius:6px; }
+.mglg-tc-col legend { font-size:11px; font-weight:700; padding:0 4px; }
+.mglg-tc-col label { display:flex; align-items:center; gap:5px; font-size:12px; line-height:1.7; cursor:pointer; }
+.mglg-tc-col label input { margin:0; } .mglg-tc-col label .dice { margin-left:auto; font-size:10px; opacity:.55; }
+.mglg-tc-addname { display:flex; gap:4px; margin-top:6px; } .mglg-tc-addname input { flex:1; }
+.mglg-tc-foot { display:flex; justify-content:space-between; }

@@ -20,9 +20,9 @@
       <div class="mglg-quick mglg-panel-live">
         <span class="mglg-label">각종 표</span>
         <select class="mglg-table-select" aria-label="각종 표 선택">
-          {{#each v3.tables}}<option value="{{name}}" {{#if missing}}disabled{{/if}}>{{name}}{{#if missing}} (롤테이블 없음){{/if}}</option>{{/each}}
+          {{#each v3.tables}}<option value="{{value}}" {{#if missing}}disabled{{/if}}>{{name}}{{#if missing}} (없음){{/if}}</option>{{/each}}
         </select>
-        <button type="button" class="mglg-btn on mglg-table-roll" title="고른 표를 굴립니다. 같은 이름의 롤테이블이 있어야 합니다">굴리기</button>
+        <button type="button" class="mglg-btn on mglg-table-roll" title="고른 표를 굴려 채팅에 남깁니다. 목록은 시스템 설정의 '표 목록 편집'에서 바꿉니다">굴리기</button>
         <span class="mglg-grow"></span>
         <span class="mglg-label">주사위</span>
         <input type="text" class="mglg-dice-input" value="2d6+0" aria-label="주사위 식" size="8">
