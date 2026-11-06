@@ -267,39 +267,40 @@
 }
 @media (prefers-reduced-motion: reduce) { .mglg-sheet * { transition: none !important; animation: none !important; } }
 
-/* ---------- 채팅 카드 (v3 판정) ---------- */
-/* Roll20 마기카로기아 시트의 롤 템플릿을 참고: 흰 종이, 금갈색 테두리, 가운데 정렬, 양끝이 옅어지는 결과 띠 */
-.mglg-card { --pt:#8a7659; --pt-dk:#715e43; --paper:#fff; --ink:#222; --sub:rgba(51,51,51,.6); --line:rgba(138,118,89,.5);
-  --c-special:79,173,132; --c-fumble:182,52,49; --c-success:182,128,49; --c-fail:33,33,33;
-  position:relative; margin:2px 0; padding:14px 14px 12px; text-align:center; background:var(--paper); color:var(--ink);
-  border:1px solid var(--pt); border-radius:14px; box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--line);
-  font-family:"Gothic A1","Malgun Gothic",sans-serif; }
-.mglg-card.theme-academy { --pt:#2f6a9a; --pt-dk:#1f4d75; --line:rgba(47,106,154,.45); --c-success:30,120,190; }
-.mglg-card.theme-summer { --pt:#1e6fd9; --pt-dk:#154fa0; --line:rgba(30,111,217,.4); --paper:#fffdf4; --c-success:30,150,110; }
-.mglg-card.theme-urban { --pt:#9a8cff; --pt-dk:#7b6cff; --line:rgba(154,140,255,.45); --paper:#17142b; --ink:#efecff; --sub:#a29dcc; --c-fail:70,66,110; --c-success:70,190,150; }
+/* ---------- 채팅 카드 (v3 판정) : 팝 스티커 ---------- */
+.mglg-card { --ink:#2a2352; --paper:#fff7d6; --star:#ff6fa8; --spark:#37c6e0; --pip:var(--ink); --tot:#ff4f93;
+  --ok:#7ee3a8; --ng:#c9c6e6; --sp:#ffd23f; --fb:#ff8a8a;
+  position:relative; margin:2px 4px 6px 2px; padding:12px; text-align:center; overflow:hidden; background:var(--paper); color:var(--ink);
+  border:3px solid var(--ink); border-radius:18px; box-shadow:4px 4px 0 var(--ink); font-family:"Gothic A1","Malgun Gothic",sans-serif; }
+.mglg-card.theme-academy { --paper:#e8f1ff; --star:#4f8fe8; --spark:#ffb347; --tot:#2f6fd0; }
+.mglg-card.theme-summer { --paper:#e2fbf3; --star:#ff7a59; --spark:#ffd23f; --tot:#ff6a3d; }
+.mglg-card.theme-urban { --ink:#efe9ff; --paper:#1e1a3d; --star:#ff6fa8; --spark:#7ee3e0; --tot:#ffd23f; --pip:#2a2352; --ng:#5a4f96; }
+.mglg-card.theme-urban { border-color:#b9a8ff; box-shadow:4px 4px 0 #0c0a24; }
+.mglg-card::before { content:"★"; position:absolute; right:10px; top:4px; font-size:16px; color:var(--star); -webkit-text-stroke:1px var(--ink); }
+.mglg-card::after { content:"✦"; position:absolute; left:10px; top:30px; font-size:12px; color:var(--spark); }
 
-.mglg-card-who { font-size:11px; color:var(--sub); margin-bottom:2px; }
-.mglg-card-title { font-size:17px; font-weight:800; line-height:1.25; margin-bottom:8px; }
+.mglg-card-who { font-size:10px; font-weight:700; opacity:.65; }
+.mglg-card-title { font-size:17px; font-weight:900; line-height:1.25; margin-bottom:7px; }
 
-.mglg-card-stage { display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:8px; }
-.mglg-die { width:30px; height:30px; padding:4px; box-sizing:border-box; display:grid; grid-template:repeat(3,1fr)/repeat(3,1fr);
-  border:1.5px solid var(--pt); border-radius:7px; background:transparent; }
-.mglg-pip { width:5px; height:5px; margin:auto; border-radius:50%; }
-.mglg-pip.on { background:var(--pt-dk); }
-.mglg-card.theme-urban .mglg-pip.on { background:var(--pt); }
-.mglg-mod { font-size:11px; font-weight:700; color:var(--pt); }
-.mglg-eq { color:var(--sub); }
-.mglg-total { min-width:44px; height:38px; padding:0 8px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center;
-  font-size:22px; font-weight:800; color:var(--pt-dk); border:1.5px solid var(--pt); border-radius:9em; background:rgba(138,118,89,.08); }
-.mglg-card.theme-urban .mglg-total { color:var(--ink); background:rgba(154,140,255,.12); }
+.mglg-card-stage { display:flex; align-items:center; justify-content:center; gap:6px; }
+.mglg-die { width:32px; height:32px; padding:5px; box-sizing:border-box; display:grid; grid-template:repeat(3,1fr)/repeat(3,1fr);
+  background:#fff; border:2.5px solid var(--ink); border-radius:9px; box-shadow:2px 2px 0 var(--ink); }
+.mglg-card.theme-urban .mglg-die { border-color:#b9a8ff; box-shadow:2px 2px 0 #0c0a24; }
+.mglg-pip { width:6px; height:6px; margin:auto; border-radius:50%; }
+.mglg-pip.on { background:var(--pip); }
+.mglg-mod { font-size:11px; font-weight:800; }
+.mglg-eq { font-weight:900; }
+.mglg-total { margin-left:2px; font-size:26px; font-weight:900; color:var(--tot); -webkit-text-stroke:1.5px var(--ink); paint-order:stroke fill; }
+.mglg-card.theme-urban .mglg-total { -webkit-text-stroke:1.5px #0c0a24; }
 
-.mglg-card-result { position:relative; padding:4px 8px; margin:0 -14px; color:#fff; font-size:14px; font-weight:800; letter-spacing:.08em; z-index:0; }
-.mglg-card-result::before { content:""; position:absolute; inset:0; z-index:-1;
-  background:linear-gradient(90deg, rgba(var(--rc),0) 0%, rgba(var(--rc),1) 50%, rgba(var(--rc),0) 100%); }
-.mglg-card.out-success { --rc:var(--c-success); } .mglg-card.out-fail { --rc:var(--c-fail); }
-.mglg-card.out-special { --rc:var(--c-special); } .mglg-card.out-fumble { --rc:var(--c-fumble); }
+.mglg-card-result { display:inline-block; margin-top:8px; padding:2px 16px; border:2.5px solid var(--ink); border-radius:99px;
+  font-size:14px; font-weight:900; color:#2a2352; box-shadow:2px 2px 0 var(--ink); transform:rotate(-2deg); }
+.mglg-card.theme-urban .mglg-card-result { border-color:#b9a8ff; box-shadow:2px 2px 0 #0c0a24; }
+.mglg-card.out-success .mglg-card-result { background:var(--ok); }
+.mglg-card.out-fail .mglg-card-result { background:var(--ng); }
+.mglg-card.out-special .mglg-card-result { background:var(--sp); }
+.mglg-card.out-fumble .mglg-card-result { background:var(--fb); }
 
-.mglg-card-target { display:flex; justify-content:center; align-items:center; gap:6px; margin-top:6px; font-size:12px; color:var(--pt); }
-.mglg-card-target::before, .mglg-card-target::after { content:""; width:6px; height:6px; transform:rotate(45deg); background:var(--pt); opacity:.7; }
-.mglg-card-target b { font-weight:800; }
-.mglg-card-doublet { margin-top:7px; padding-top:6px; border-top:1px dashed var(--line); font-size:12px; font-weight:700; color:var(--pt); }
+.mglg-card-target { margin-top:7px; font-size:10px; font-weight:700; opacity:.75; }
+.mglg-card-target b { font-weight:900; }
+.mglg-card-doublet { margin-top:6px; padding-top:5px; border-top:2px dotted currentColor; font-size:11px; font-weight:800; }
