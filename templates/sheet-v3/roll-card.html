@@ -1,14 +1,13 @@
-<div title="{{formula}} ≥ {{target}}" class="mglg-card theme-{{theme}} r{{realmIdx}} out-{{outcome}}">
-  <div class="mglg-card-head">
-    <div><span class="mglg-card-title">{{title}}</span><span class="mglg-card-who">{{actorName}}</span></div>
-    <div class="mglg-card-target">목표치<b>{{target}}</b></div>
-  </div>
-  <div class="mglg-card-body">
+<div title="{{formula}} ≥ {{target}}" class="mglg-card theme-{{theme}} out-{{outcome}}">
+  <div class="mglg-card-who">{{actorName}}</div>
+  <div class="mglg-card-title">{{title}}</div>
+  <div class="mglg-card-stage">
     {{#each dice}}<div class="mglg-die">{{#each this.pips}}<i class="mglg-pip{{#if this}} on{{/if}}"></i>{{/each}}</div>{{/each}}
     {{#each modifiers}}<span class="mglg-mod">{{this.label}} {{this.value}}</span>{{/each}}
     <span class="mglg-eq">=</span>
     <span class="mglg-total">{{total}}</span>
-    <span class="mglg-card-result">{{outcomeLabel}}</span>
   </div>
+  <div class="mglg-card-result">{{outcomeLabel}}</div>
+  <div class="mglg-card-target">목표치 : <b>{{target}}</b></div>
   {{#if doublet}}<div class="mglg-card-doublet">더블릿 · {{doublet}} 마소 2점</div>{{/if}}
 </div>
